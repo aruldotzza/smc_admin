@@ -15,7 +15,7 @@ export default function FleetPage() {
     <AdminLayout>
       <div className="w-full max-w-[1200px] flex flex-col justify-start items-start gap-5 font-['Manrope']">
         {/* Page Header matching FlletPage.html */}
-        <div className="self-stretch inline-flex justify-between items-center">
+        <div className="self-stretch flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
           <div className="inline-flex flex-col justify-start items-start">
             <div className="self-stretch flex flex-col justify-start items-start">
               <div className="justify-start text-color-text-primary text-xl font-bold font-['Manrope'] leading-8">

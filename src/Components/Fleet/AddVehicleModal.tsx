@@ -51,9 +51,9 @@ export default function AddVehicleModal() {
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-color-overlay-hero flex justify-center items-center p-4 animate-in fade-in duration-200">
+    <div className="fixed inset-0 z-50 bg-color-overlay-hero flex justify-center items-center p-3 sm:p-4 animate-in fade-in duration-200">
       <div
-        className="w-[520px] max-w-[520px] max-h-[90vh] bg-color-background-white rounded-2xl shadow-2xl flex flex-col justify-start items-start overflow-hidden font-['Manrope']"
+        className="w-full max-w-[520px] max-h-[90vh] bg-color-background-white rounded-2xl shadow-2xl flex flex-col justify-start items-start overflow-hidden font-['Manrope']"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
@@ -186,7 +186,7 @@ export default function AddVehicleModal() {
                 Capacity
               </div>
             </div>
-            <div className="self-stretch pt-3 grid grid-cols-2 gap-3">
+            <div className="self-stretch pt-3 grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div className="flex flex-col justify-start items-start gap-1">
                 <div className="justify-start text-color-input-placeholder text-xs font-semibold font-['Manrope'] uppercase leading-4 tracking-wide">
                   Max Passengers
@@ -224,7 +224,7 @@ export default function AddVehicleModal() {
                 Pricing (SGD)
               </div>
             </div>
-            <div className="self-stretch pt-3 grid grid-cols-2 gap-3">
+            <div className="self-stretch pt-3 grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div className="flex flex-col justify-start items-start gap-1">
                 <div className="justify-start text-color-input-placeholder text-xs font-semibold font-['Manrope'] uppercase leading-4 tracking-wide">
                   Base Fare ($)

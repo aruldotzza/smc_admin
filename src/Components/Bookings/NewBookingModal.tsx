@@ -117,9 +117,9 @@ export default function NewBookingModal() {
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/50 flex justify-center items-center p-4 animate-in fade-in duration-200">
+    <div className="fixed inset-0 z-50 bg-black/50 flex justify-center items-center p-3 sm:p-4 animate-in fade-in duration-200">
       <div
-        className="w-[580px] max-w-[580px] max-h-[90vh] bg-color-background-white rounded-2xl shadow-2xl flex flex-col justify-start items-start overflow-hidden font-['Manrope']"
+        className="w-full max-w-[580px] max-h-[90vh] bg-color-background-white rounded-2xl shadow-2xl flex flex-col justify-start items-start overflow-hidden font-['Manrope']"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
@@ -218,7 +218,7 @@ export default function NewBookingModal() {
                     Booked Via
                   </div>
                 </div>
-                <div className="self-stretch grid grid-cols-4 gap-2">
+                <div className="self-stretch grid grid-cols-2 sm:grid-cols-4 gap-2">
                   {(
                     [
                       { id: "website", label: "Website" },
@@ -313,7 +313,7 @@ export default function NewBookingModal() {
               </div>
             </div>
             <div className="self-stretch pt-3 flex flex-col justify-start items-start gap-3">
-              <div className="self-stretch grid grid-cols-2 gap-3">
+              <div className="self-stretch grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <label className="block text-xs font-semibold text-color-input-placeholder uppercase mb-1">
                     Pickup Date
