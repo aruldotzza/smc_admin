@@ -1,6 +1,11 @@
 import type { Metadata, Viewport } from "next";
 import { manrope, inter, playfair } from "@/fonts";
 import "./globals.css";
+import AppProviders from "@/context/AppProviders";
+import NewBookingModal from "@/Components/Bookings/NewBookingModal";
+import BookingDetailsDrawer from "@/Components/Bookings/BookingDetailsDrawer";
+import AddVehicleModal from "@/Components/Fleet/AddVehicleModal";
+import EditVehicleModal from "@/Components/Fleet/EditVehicleModal";
 
 export const metadata: Metadata = {
   title: "Singapore Maxicabs | Admin Portal",
@@ -26,7 +31,13 @@ export default function RootLayout({
       className={`${manrope.variable} ${inter.variable} ${playfair.variable} scroll-smooth antialiased`}
     >
       <body className="min-h-screen flex flex-col font-sans bg-[#F8F9FA] text-[#071E3B] antialiased">
-        {children}
+        <AppProviders>
+          {children}
+          <NewBookingModal />
+          <BookingDetailsDrawer />
+          <AddVehicleModal />
+          <EditVehicleModal />
+        </AppProviders>
       </body>
     </html>
   );

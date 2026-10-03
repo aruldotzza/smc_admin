@@ -5,6 +5,25 @@
   --font-inter: var(--font-inter), 'Inter', system-ui, sans-serif;
   --font-playfair: var(--font-playfair), 'Playfair Display', Georgia, serif;
 
+  /* Direct color- prefixed tokens from Figma */
+  --color-color-background-brand: #071E3B;
+  --color-color-background-accent: #C6A45A;
+  --color-color-background-selected: #EEF5FB;
+  --color-color-background-white: #FFFFFF;
+  --color-color-background-disabled: #E9ECEF;
+  --color-color-input-background: #FFFFFF;
+  --color-color-input-placeholder: #667085;
+  --color-color-status-success: #16803C;
+  --color-color-text-primary: #071E3B;
+  --color-color-text-inverse: #FFFFFF;
+  --color-color-brand-primary: #071E3B;
+  --color-color-border-subtle: #E2E8F0;
+  --color-color-border-focus: #C6A45A;
+  --color-color-selection-recommended-border: #C6A45A;
+  --color-color-overlay-light: rgba(255, 255, 255, 0.20);
+  --color-color-overlay-dark: rgba(7, 30, 59, 0.24);
+  --color-color-overlay-hero: rgba(0, 0, 0, 0.40);
+
   /* Primary Deep & Dark Blues */
   --color-primary-deep: #071E3B;
   --color-primary-dark: #0B2A4A;
@@ -36,7 +55,7 @@
   --color-text-inverse: #FFFFFF;
 
   /* Borders */
-  --color-border-subtle: #E9ECEF;
+  --color-border-subtle: #E2E8F0;
   --color-border-default: #7A8593;
   --color-border-strong: #6B7788;
   --color-border-card: #E2E8F0;
@@ -65,40 +84,49 @@
 }
 
 :root {
-  --color-brand-primary: #071E3B;
-  --color-brand-primary-dark: #0B2A4A;
-  --color-brand-accent: #C6A45A;
-  --color-brand-accent-hover: #B58E45;
-  --color-brand-accent-pressed: #A77E3C;
-  --color-background-accent-subtle: #FBF7EC;
-  --color-background-accent-soft: #F4EAD1;
   --color-background-brand: #071E3B;
-  --color-background-brand-secondary: #123F6B;
-  --color-background-base: #F7F5EF;
+  --color-background-accent: #C6A45A;
   --color-background-selected: #EEF5FB;
+  --color-background-white: #FFFFFF;
   --color-background-disabled: #E9ECEF;
-  --color-text-primary: #071E3B;
-  --color-text-secondary: #5F6B7A;
-  --color-text-tertiary: #667085;
-  --color-text-disabled: #5F6B7A;
-  --color-text-inverse: #FFFFFF;
-  --color-border-subtle: #E9ECEF;
-  --color-border-default: #7A8593;
-  --color-cta-primary-base: #C6A45A;
-  --color-cta-primary-pressed: #A77E3C;
-  --color-cta-secondary-base: #071E3B;
-  --color-cta-secondary-text: #FFFFFF;
+  --color-input-background: #FFFFFF;
+  --color-input-placeholder: #667085;
   --color-status-success: #16803C;
-  --color-status-success-bg: #ECFDF3;
-  --color-status-warning: #8A5A00;
-  --color-status-warning-bg: #FFF8E7;
+  --color-text-primary: #071E3B;
+  --color-text-inverse: #FFFFFF;
+  --color-brand-primary: #071E3B;
+  --color-border-subtle: #E2E8F0;
+  --color-border-focus: #C6A45A;
+  --color-selection-recommended-border: #C6A45A;
   --color-overlay-light: rgba(255, 255, 255, 0.20);
   --color-overlay-dark: rgba(7, 30, 59, 0.24);
   --color-overlay-hero: rgba(0, 0, 0, 0.40);
-  --color-input-background: #FFFFFF;
-  --color-input-border: #7A8593;
-  --color-input-placeholder: #667085;
 }
+
+/* Fallback utilities for raw Figma exported classes */
+.bg-color-background-brand { background-color: #071E3B !important; }
+.bg-color-background-accent { background-color: #C6A45A !important; }
+.bg-color-background-selected { background-color: #EEF5FB !important; }
+.bg-color-background-white { background-color: #FFFFFF !important; }
+.bg-color-background-disabled { background-color: #E9ECEF !important; }
+.bg-color-input-background { background-color: #FFFFFF !important; }
+.bg-color-input-placeholder { background-color: #667085 !important; }
+.bg-color-status-success { background-color: #16803C !important; }
+.bg-color-text-primary { background-color: #071E3B !important; }
+.bg-color-overlay-light { background-color: rgba(255, 255, 255, 0.20) !important; }
+.bg-color-overlay-dark { background-color: rgba(7, 30, 59, 0.24) !important; }
+.bg-color-overlay-hero { background-color: rgba(0, 0, 0, 0.40) !important; }
+
+.text-color-text-primary { color: #071E3B !important; }
+.text-color-text-inverse { color: #FFFFFF !important; }
+.text-color-input-placeholder { color: #667085 !important; }
+.text-color-status-success { color: #16803C !important; }
+.text-color-brand-primary { color: #071E3B !important; }
+
+.border-color-border-subtle { border-color: #E2E8F0 !important; }
+.outline-color-border-subtle { outline-color: #E2E8F0 !important; }
+.outline-color-border-focus { outline-color: #C6A45A !important; }
+.outline-color-selection-recommended-border { outline-color: #C6A45A !important; }
 
 body {
   font-family: var(--font-manrope), 'Manrope', system-ui, sans-serif;

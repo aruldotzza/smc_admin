@@ -1,7 +1,15 @@
 import React from "react";
 
-interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: "primary" | "secondary" | "outline" | "gold" | "dark";
+export interface ButtonProps
+  extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+  variant?:
+    | "gold"
+    | "primary"
+    | "secondary"
+    | "outline"
+    | "ghost"
+    | "danger"
+    | "dark";
   size?: "sm" | "md" | "lg";
   children: React.ReactNode;
   icon?: React.ReactNode;
@@ -14,41 +22,52 @@ export default function Button({
   size = "md",
   children,
   icon,
-  iconPosition = "right",
+  iconPosition = "left",
   fullWidth = false,
   className = "",
+  disabled,
   ...props
 }: ButtonProps) {
   const baseStyles =
-    "inline-flex items-center justify-center font-medium rounded-lg transition-all duration-200 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed";
+    "inline-flex items-center justify-center font-semibold rounded-lg transition-all duration-200 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed select-none active:scale-[0.98]";
 
   const sizeStyles = {
-    sm: "px-3.5 py-1.5 text-xs gap-1.5",
-    md: "px-5 py-2.5 text-sm gap-2",
-    lg: "px-6 py-3.5 text-base gap-2.5",
+    sm: "px-3 py-1.5 text-xs gap-1.5",
+    md: "px-4 py-2.5 text-xs md:text-sm gap-2",
+    lg: "px-5 py-3 text-sm md:text-base gap-2.5",
   };
 
   const variantStyles = {
-    gold: "bg-[#C49B55] hover:bg-[#b08741] text-[#0A1128] font-semibold shadow-sm hover:shadow-md",
+    gold: "bg-[#C6A45A] hover:bg-[#B58E45] active:bg-[#A77E3C] text-[#071E3B] shadow-sm hover:shadow",
     primary:
-      "bg-[#0A1637] hover:bg-[#112352] text-white shadow-sm hover:shadow-md",
+      "bg-[#071E3B] hover:bg-[#0B2A4A] active:bg-[#041224] text-white shadow-sm hover:shadow border border-[#123F6B]",
     secondary:
-      "bg-[#1A2544] hover:bg-[#23325c] text-white border border-[#2B3B66]",
+      "bg-[#0B2A4A] hover:bg-[#123F6B] text-white border border-slate-700",
     outline:
-      "border border-[#C49B55] text-[#C49B55] hover:bg-[#C49B55] hover:text-[#0A1128]",
-    dark: "bg-[#0d1527] hover:bg-[#14203d] text-white border border-[#1e2e54]",
+      "bg-white hover:bg-slate-50 text-slate-700 border border-slate-300 hover:border-slate-400 shadow-sm",
+    ghost:
+      "bg-transparent hover:bg-slate-100 text-slate-700 active:bg-slate-200",
+    danger:
+      "bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200",
+    dark:
+      "bg-[#071E3B] hover:bg-[#0E2F4A] text-white border border-[#172334]",
   };
 
   return (
     <button
+      disabled={disabled}
       className={`${baseStyles} ${sizeStyles[size]} ${variantStyles[variant]} ${
         fullWidth ? "w-full" : ""
       } ${className}`}
       {...props}
     >
-      {icon && iconPosition === "left" && <span>{icon}</span>}
+      {icon && iconPosition === "left" && (
+        <span className="flex-shrink-0">{icon}</span>
+      )}
       <span>{children}</span>
-      {icon && iconPosition === "right" && <span>{icon}</span>}
+      {icon && iconPosition === "right" && (
+        <span className="flex-shrink-0">{icon}</span>
+      )}
     </button>
   );
 }

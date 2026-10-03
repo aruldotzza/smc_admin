@@ -1,81 +1,167 @@
+"use client";
+
 import React from "react";
-import Button from "@/Shared/Button/Button";
-import Badge from "@/Shared/Badge/Badge";
-import { LayoutDashboard, Car, Calendar, Users, Settings, ShieldCheck } from "lucide-react";
+import AdminLayout from "@/Components/Layout/AdminLayout";
+import HeroBanner from "@/Components/Dashboard/HeroBanner";
+import RecentBookingsTable from "@/Components/Dashboard/RecentBookingsTable";
+import StatusBreakdownCard from "@/Components/Dashboard/StatusBreakdownCard";
+import QuickActionsCard from "@/Components/Dashboard/QuickActionsCard";
+import { useBookings } from "@/context/BookingContext";
+import { useFleet } from "@/context/FleetContext";
 
-export default function Home() {
+export default function DashboardPage() {
+  const { counts, bookings } = useBookings();
+  const { activeVehiclesCount, totalVehiclesCount } = useFleet();
+
+  const revenueOct = bookings.reduce(
+    (sum, b) =>
+      b.status === "confirmed" || b.status === "completed" || b.status === "in_progress"
+        ? sum + b.fare
+        : sum,
+    0
+  );
+
   return (
-    <div className="min-h-screen bg-[#F8F9FA] text-[#071E3B] flex flex-col">
-      {/* Top Navigation Bar */}
-      <header className="bg-[#071E3B] text-white border-b border-[#123F6B] px-6 py-4 flex items-center justify-between sticky top-0 z-30 shadow-md">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#C6A45A] to-[#B58E45] flex items-center justify-center font-bold text-[#071E3B] text-lg shadow">
-            SMC
-          </div>
-          <div>
-            <div className="font-bold text-base tracking-wide flex items-center gap-2">
-              Singapore Maxicabs <Badge variant="gold" className="text-[10px] py-0.5">Admin</Badge>
+    <AdminLayout>
+      <div className="w-full max-w-[1200px] flex flex-col justify-start items-start gap-6">
+        {/* Top Hero Banner */}
+        <HeroBanner />
+
+        {/* 4 Stats Cards from dashboard.html */}
+        <div className="self-stretch grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          {/* Total Bookings */}
+          <div className="p-5 bg-color-background-white rounded-xl outline outline-1 outline-offset-[-1px] outline-color-border-subtle inline-flex flex-col justify-start items-start gap-3">
+            <div className="self-stretch inline-flex justify-between items-center">
+              <div className="inline-flex flex-col justify-start items-start">
+                <div className="justify-start text-color-input-placeholder text-xs font-normal font-['Manrope'] leading-5">
+                  Total Bookings
+                </div>
+              </div>
+              <div className="size-9 bg-blue-50 rounded-lg flex justify-center items-center">
+                <div className="size-5 relative overflow-hidden">
+                  <div className="w-3.5 h-3 left-[3px] top-[4px] absolute outline outline-[1.60px] outline-offset-[-0.80px] outline-blue-600" />
+                  <div className="w-3.5 h-1.5 left-[3px] top-[2px] absolute outline outline-[1.60px] outline-offset-[-0.80px] outline-blue-600" />
+                </div>
+              </div>
             </div>
-            <p className="text-xs text-slate-400">Operations & Management Portal</p>
+            <div className="self-stretch flex flex-col justify-start items-start">
+              <div className="self-stretch flex flex-col justify-start items-start">
+                <div className="justify-start text-color-text-primary text-2xl font-bold font-['Manrope'] leading-10">
+                  {counts.all}
+                </div>
+              </div>
+              <div className="w-full pt-0.5 flex flex-col justify-start items-start">
+                <div className="justify-start text-green-600 text-xs font-normal font-['Manrope'] leading-4">
+                  +3 this week
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Pending */}
+          <div className="p-5 bg-color-background-white rounded-xl outline outline-1 outline-offset-[-1px] outline-color-border-subtle inline-flex flex-col justify-start items-start gap-3">
+            <div className="self-stretch inline-flex justify-between items-center">
+              <div className="inline-flex flex-col justify-start items-start">
+                <div className="justify-start text-color-input-placeholder text-xs font-normal font-['Manrope'] leading-5">
+                  Pending
+                </div>
+              </div>
+              <div className="size-9 bg-amber-50 rounded-lg flex justify-center items-center">
+                <div className="size-5 relative overflow-hidden">
+                  <div className="size-4 left-[2px] top-[2px] absolute outline outline-[1.60px] outline-offset-[-0.80px] outline-amber-600" />
+                  <div className="w-[3px] h-1.5 left-[10px] top-[6px] absolute outline outline-[1.60px] outline-offset-[-0.80px] outline-amber-600" />
+                </div>
+              </div>
+            </div>
+            <div className="self-stretch flex flex-col justify-start items-start">
+              <div className="self-stretch flex flex-col justify-start items-start">
+                <div className="justify-start text-color-text-primary text-2xl font-bold font-['Manrope'] leading-10">
+                  {counts.pending}
+                </div>
+              </div>
+              <div className="w-full pt-0.5 flex flex-col justify-start items-start">
+                <div className="justify-start text-amber-600 text-xs font-normal font-['Manrope'] leading-4">
+                  Needs attention
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Active Vehicles */}
+          <div className="p-5 bg-color-background-white rounded-xl outline outline-1 outline-offset-[-1px] outline-color-border-subtle inline-flex flex-col justify-start items-start gap-3">
+            <div className="self-stretch inline-flex justify-between items-center">
+              <div className="inline-flex flex-col justify-start items-start">
+                <div className="justify-start text-color-input-placeholder text-xs font-normal font-['Manrope'] leading-5">
+                  Active Vehicles
+                </div>
+              </div>
+              <div className="size-9 bg-indigo-50 rounded-lg flex justify-center items-center">
+                <div className="size-5 relative overflow-hidden">
+                  <div className="w-4 h-[5px] left-[2px] top-[8px] absolute outline outline-[1.60px] outline-offset-[-0.80px] outline-indigo-600" />
+                  <div className="w-4 h-1 left-[2px] top-[13px] absolute outline outline-[1.60px] outline-offset-[-0.80px] outline-indigo-600" />
+                  <div className="size-[3px] left-[4.50px] top-[15.50px] absolute bg-indigo-600" />
+                  <div className="size-[3px] left-[12.50px] top-[15.50px] absolute bg-indigo-600" />
+                </div>
+              </div>
+            </div>
+            <div className="self-stretch flex flex-col justify-start items-start">
+              <div className="self-stretch flex flex-col justify-start items-start">
+                <div className="justify-start text-color-text-primary text-2xl font-bold font-['Manrope'] leading-10">
+                  {activeVehiclesCount}
+                </div>
+              </div>
+              <div className="w-full pt-0.5 flex flex-col justify-start items-start">
+                <div className="justify-start text-color-input-placeholder text-xs font-normal font-['Manrope'] leading-4">
+                  {totalVehiclesCount} total fleet
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Revenue (Oct) */}
+          <div className="p-5 bg-color-background-white rounded-xl outline outline-1 outline-offset-[-1px] outline-color-border-subtle inline-flex flex-col justify-start items-start gap-3">
+            <div className="self-stretch inline-flex justify-between items-center">
+              <div className="inline-flex flex-col justify-start items-start">
+                <div className="justify-start text-color-input-placeholder text-xs font-normal font-['Manrope'] leading-5">
+                  Revenue (Oct)
+                </div>
+              </div>
+              <div className="size-9 bg-amber-50 rounded-lg flex justify-center items-center">
+                <div className="size-5 relative overflow-hidden">
+                  <div className="size-4 left-[2px] top-[2px] absolute outline outline-[1.60px] outline-offset-[-0.80px] outline-color-selection-recommended-border" />
+                  <div className="w-[5px] h-2 left-[7.50px] top-[6px] absolute outline outline-[1.60px] outline-offset-[-0.80px] outline-color-selection-recommended-border" />
+                </div>
+              </div>
+            </div>
+            <div className="self-stretch flex flex-col justify-start items-start">
+              <div className="self-stretch flex flex-col justify-start items-start">
+                <div className="justify-start text-color-text-primary text-2xl font-bold font-['Manrope'] leading-10">
+                  ${revenueOct || 630}
+                </div>
+              </div>
+              <div className="w-full pt-0.5 flex flex-col justify-start items-start">
+                <div className="justify-start text-green-600 text-xs font-normal font-['Manrope'] leading-4">
+                  All confirmed trips
+                </div>
+              </div>
+            </div>
           </div>
         </div>
 
-        <div className="flex items-center gap-4">
-          <div className="flex items-center gap-2 text-xs text-slate-300 bg-[#0B2A4A] px-3 py-1.5 rounded-lg border border-slate-700/60">
-            <ShieldCheck className="w-4 h-4 text-[#C6A45A]" />
-            <span>Design System Ready</span>
+        {/* Two Columns Grid: Recent Bookings (Left) & Status Breakdown + Quick Actions (Right) */}
+        <div className="self-stretch grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
+          {/* Left Column: Recent Bookings */}
+          <div className="lg:col-span-2">
+            <RecentBookingsTable />
+          </div>
+
+          {/* Right Column: Booking Status + Quick Actions */}
+          <div className="flex flex-col gap-4">
+            <StatusBreakdownCard />
+            <QuickActionsCard />
           </div>
         </div>
-      </header>
-
-      {/* Main Content Area */}
-      <main className="flex-1 max-w-7xl w-full mx-auto p-6 md:p-8 flex flex-col items-center justify-center text-center">
-        <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-8 md:p-12 max-w-2xl w-full">
-          <div className="w-16 h-16 rounded-2xl bg-[#FBF7EC] border border-[#C6A45A]/30 flex items-center justify-center mx-auto mb-6">
-            <LayoutDashboard className="w-8 h-8 text-[#C6A45A]" />
-          </div>
-
-          <Badge variant="gold" className="mb-4">Setup Completed</Badge>
-          
-          <h1 className="text-2xl md:text-3xl font-extrabold text-[#071E3B] tracking-tight mb-3">
-            Admin Portal Architecture Ready
-          </h1>
-          
-          <p className="text-slate-600 text-sm md:text-base mb-8 max-w-lg mx-auto">
-            Design tokens, Tailwind v4 theme, Google typography (Manrope & Playfair Display), 
-            and atomic components are aligned with the landing page design system.
-          </p>
-
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-left mb-8">
-            <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-100 flex flex-col gap-1">
-              <span className="text-xs text-slate-500 font-medium">Palette</span>
-              <span className="text-xs font-semibold text-[#071E3B] flex items-center gap-1.5">
-                <span className="w-2.5 h-2.5 rounded-full bg-[#071E3B] inline-block"></span>
-                <span className="w-2.5 h-2.5 rounded-full bg-[#C6A45A] inline-block"></span>
-                Deep Navy & Gold
-              </span>
-            </div>
-            <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-100 flex flex-col gap-1">
-              <span className="text-xs text-slate-500 font-medium">Typography</span>
-              <span className="text-xs font-semibold text-[#071E3B]">Manrope & Inter</span>
-            </div>
-            <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-100 flex flex-col gap-1">
-              <span className="text-xs text-slate-500 font-medium">Icons</span>
-              <span className="text-xs font-semibold text-[#071E3B]">Lucide React</span>
-            </div>
-            <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-100 flex flex-col gap-1">
-              <span className="text-xs text-slate-500 font-medium">Architecture</span>
-              <span className="text-xs font-semibold text-[#071E3B]">Next.js 16 App</span>
-            </div>
-          </div>
-
-          <div className="flex flex-wrap items-center justify-center gap-3">
-            <Button variant="gold" size="md">
-              Ready for Page HTML / Designs
-            </Button>
-          </div>
-        </div>
-      </main>
-    </div>
+      </div>
+    </AdminLayout>
   );
 }
