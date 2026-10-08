@@ -1,28 +1,147 @@
 "use client";
 
-import React, { createContext, useContext, useState } from "react";
-import { VehiclePricingRate } from "@/types/pricing";
+import React, { createContext, useContext, useState, useEffect, useCallback } from "react";
+import { VehiclePricingRate, PricingTab } from "@/types/pricing";
 import { initialPricingRates } from "@/data/initialPricing";
+import {
+  getVehicles,
+  setVehicleServiceRate,
+  getAddOns,
+  updateAddOn,
+  createAddOn,
+  getDistanceRules,
+  updateDistanceRule,
+  createDistanceRule,
+} from "@/lib/api/services";
+import {
+  ApiAddOn,
+  ApiDistanceRule,
+  AdminCreateAddOnPayload,
+  AdminUpdateAddOnPayload,
+  AdminCreateDistanceRulePayload,
+  AdminUpdateDistanceRulePayload,
+} from "@/types/api";
 
 interface PricingContextType {
+  // Vehicle Rates
   rates: VehiclePricingRate[];
   updateRate: (
     id: string,
     field: keyof VehiclePricingRate,
     value: number
   ) => void;
-  saveStatus: "idle" | "saving" | "saved";
-  saveAllChanges: () => void;
+  saveStatus: "idle" | "saving" | "saved" | "error";
+  saveMessage: string | null;
+  saveAllChanges: () => Promise<void>;
   resetToDefaults: () => void;
+  isLoading: boolean;
+  refreshPricingData: () => Promise<void>;
+
+  // Tabs
+  activeTab: PricingTab;
+  setActiveTab: (tab: PricingTab) => void;
+
+  // Add-ons
+  addOns: ApiAddOn[];
+  updateAddOnItem: (
+    id: number,
+    updates: AdminUpdateAddOnPayload
+  ) => Promise<boolean>;
+  createAddOnItem: (payload: AdminCreateAddOnPayload) => Promise<boolean>;
+
+  // Distance Rules
+  distanceRules: ApiDistanceRule[];
+  updateDistancePricingRule: (
+    id: number,
+    updates: AdminUpdateDistanceRulePayload
+  ) => Promise<boolean>;
+  createDistancePricingRule: (
+    payload: AdminCreateDistanceRulePayload
+  ) => Promise<boolean>;
 }
 
 const PricingContext = createContext<PricingContextType | undefined>(undefined);
 
 export function PricingProvider({ children }: { children: React.ReactNode }) {
   const [rates, setRates] = useState<VehiclePricingRate[]>(initialPricingRates);
-  const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "saved">(
+  const [addOns, setAddOns] = useState<ApiAddOn[]>([]);
+  const [distanceRules, setDistanceRules] = useState<ApiDistanceRule[]>([]);
+  const [activeTab, setActiveTab] = useState<PricingTab>("vehicle_rates");
+
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "saved" | "error">(
     "idle"
   );
+  const [saveMessage, setSaveMessage] = useState<string | null>(null);
+
+  const refreshPricingData = useCallback(async () => {
+    setIsLoading(true);
+    try {
+      // 1. Fetch live vehicles & rates
+      try {
+        const vRes = await getVehicles();
+        if (vRes && vRes.data && vRes.data.length > 0) {
+          const liveRates: VehiclePricingRate[] = vRes.data.map((v) => {
+            const baseFare =
+              v.prices?.departure_transfer?.amount ||
+              v.prices?.arrival?.amount ||
+              65;
+            const meetAndGreet =
+              v.prices?.arrival?.amount ||
+              baseFare + 10;
+            const charter3h =
+              v.prices?.hourly?.amount ? v.prices.hourly.amount * 3 - 15 : 180;
+            const charter8h =
+              v.prices?.hourly?.amount ? v.prices.hourly.amount * 8 : 480;
+
+            const pax = v.passengerCapacity ? `${v.passengerCapacity} Passengers` : "6 Passengers";
+            const luggage = v.luggageCapacity ? `${v.luggageCapacity} Luggage` : "4 Luggage";
+
+            return {
+              id: String(v.id),
+              apiId: v.id,
+              name: v.name,
+              model: v.description || v.vehicleType || "Executive Maxi Cab",
+              capacityText: `${pax} · ${luggage}`,
+              baseFare,
+              meetAndGreet,
+              charter3h,
+              charter8h,
+            };
+          });
+          setRates(liveRates);
+        }
+      } catch (err) {
+        console.warn("Could not load vehicles for pricing rates:", err);
+      }
+
+      // 2. Fetch add-ons
+      try {
+        const aRes = await getAddOns();
+        if (aRes && aRes.data) {
+          setAddOns(aRes.data);
+        }
+      } catch (err) {
+        console.warn("Could not load add-ons:", err);
+      }
+
+      // 3. Fetch distance rules
+      try {
+        const dRes = await getDistanceRules();
+        if (dRes && dRes.data) {
+          setDistanceRules(dRes.data);
+        }
+      } catch (err) {
+        console.warn("Could not load distance rules:", err);
+      }
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    refreshPricingData();
+  }, [refreshPricingData]);
 
   const updateRate = (
     id: string,
@@ -34,16 +153,137 @@ export function PricingProvider({ children }: { children: React.ReactNode }) {
     );
   };
 
-  const saveAllChanges = () => {
+  const saveAllChanges = async () => {
     setSaveStatus("saving");
-    setTimeout(() => {
+    setSaveMessage(null);
+    let successCount = 0;
+    let failCount = 0;
+
+    for (const rate of rates) {
+      const numId = rate.apiId || (!isNaN(Number(rate.id)) ? Number(rate.id) : null);
+      if (numId) {
+        try {
+          // Update Departure Transfer
+          await setVehicleServiceRate(numId, "departure_transfer", {
+            amount: rate.baseFare,
+            currency: "SGD",
+            status: "active",
+          });
+
+          // Update Arrival (Meet & Greet)
+          await setVehicleServiceRate(numId, "arrival", {
+            amount: rate.meetAndGreet,
+            currency: "SGD",
+            status: "active",
+          });
+
+          // Update Hourly
+          const hourlyAmount = Math.round(rate.charter8h / 8) || 65;
+          await setVehicleServiceRate(numId, "hourly", {
+            amount: hourlyAmount,
+            currency: "SGD",
+            minimumHours: 3,
+            status: "active",
+          });
+
+          successCount++;
+        } catch (err: any) {
+          console.error(`Failed to update rates for vehicle ${numId}:`, err);
+          failCount++;
+        }
+      }
+    }
+
+    if (failCount === 0) {
       setSaveStatus("saved");
-      setTimeout(() => setSaveStatus("idle"), 2500);
-    }, 500);
+      setSaveMessage("All pricing rates updated successfully in database!");
+      setTimeout(() => setSaveStatus("idle"), 3000);
+    } else {
+      setSaveStatus(successCount > 0 ? "saved" : "error");
+      setSaveMessage(
+        successCount > 0
+          ? `Updated ${successCount} vehicle rates. ${failCount} had errors.`
+          : "Failed to update rates. Using local state."
+      );
+      setTimeout(() => setSaveStatus("idle"), 4000);
+    }
   };
 
   const resetToDefaults = () => {
     setRates(initialPricingRates);
+  };
+
+  const updateAddOnItem = async (
+    id: number,
+    updates: AdminUpdateAddOnPayload
+  ): Promise<boolean> => {
+    try {
+      await updateAddOn(id, updates);
+      setAddOns((prev) =>
+        prev.map((a) =>
+          a.id === id
+            ? {
+                ...a,
+                ...updates,
+                price: updates.price !== undefined ? updates.price : a.price,
+                status: updates.status || a.status,
+              }
+            : a
+        )
+      );
+      return true;
+    } catch (err: any) {
+      console.error("Failed to update add-on:", err);
+      return false;
+    }
+  };
+
+  const createAddOnItem = async (
+    payload: AdminCreateAddOnPayload
+  ): Promise<boolean> => {
+    try {
+      const res = await createAddOn(payload);
+      if (res && res.add_on) {
+        setAddOns((prev) => [...prev, res.add_on]);
+        return true;
+      }
+      return false;
+    } catch (err: any) {
+      console.error("Failed to create add-on:", err);
+      return false;
+    }
+  };
+
+  const updateDistancePricingRule = async (
+    id: number,
+    updates: AdminUpdateDistanceRulePayload
+  ): Promise<boolean> => {
+    try {
+      await updateDistanceRule(id, updates);
+      setDistanceRules((prev) =>
+        prev.map((d) => (d.id === id ? { ...d, ...updates } : d))
+      );
+      return true;
+    } catch (err: any) {
+      console.error("Failed to update distance rule:", err);
+      return false;
+    }
+  };
+
+  const createDistancePricingRule = async (
+    payload: AdminCreateDistanceRulePayload
+  ): Promise<boolean> => {
+    try {
+      const res = await createDistanceRule(payload);
+      if (res && res.distance_rule) {
+        setDistanceRules((prev) => [...prev, res.distance_rule]);
+        return true;
+      }
+      return false;
+    } catch (err: any) {
+      console.error("Failed to create distance rule:", err);
+      return false;
+    }
   };
 
   return (
@@ -52,8 +292,19 @@ export function PricingProvider({ children }: { children: React.ReactNode }) {
         rates,
         updateRate,
         saveStatus,
+        saveMessage,
         saveAllChanges,
         resetToDefaults,
+        isLoading,
+        refreshPricingData,
+        activeTab,
+        setActiveTab,
+        addOns,
+        updateAddOnItem,
+        createAddOnItem,
+        distanceRules,
+        updateDistancePricingRule,
+        createDistancePricingRule,
       }}
     >
       {children}

@@ -22,32 +22,38 @@ export default function AddVehicleModal() {
   const [charter8h, setCharter8h] = useState(480);
   const [isActive, setIsActive] = useState(true);
 
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
   if (!isAddVehicleModalOpen) return null;
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!name) {
       alert("Please enter Vehicle Name.");
       return;
     }
 
-    addVehicle({
-      fleetNumber: fleetNumber || `SMC-00${totalVehiclesCount + 1}`,
-      name,
-      model: model || "Toyota Vellfire / Alphard",
-      category: "6_seater",
-      plateNumber: "SHA 1234 X",
-      paxCapacity: Number(paxCapacity),
-      luggageCapacity: Number(luggageCapacity),
-      baseRate: Number(baseFare),
-      hourlyRate: Math.round(Number(charter8h) / 8),
-      driverName: driverName || "Unassigned",
-      driverPhone: driverPhone || "+65 9000 0000",
-      status: (isActive ? "active" : "inactive") as VehicleStatus,
-      features: ["Luggage Space", "Air Conditioning", "Executive Seating"],
-    });
-
-    closeAddVehicleModal();
+    try {
+      setIsSubmitting(true);
+      await addVehicle({
+        fleetNumber: fleetNumber || `SMC-00${totalVehiclesCount + 1}`,
+        name,
+        model: model || "Toyota Vellfire / Alphard",
+        category: "6_seater",
+        plateNumber: "SHA 1234 X",
+        paxCapacity: Number(paxCapacity),
+        luggageCapacity: Number(luggageCapacity),
+        baseRate: Number(baseFare),
+        hourlyRate: Math.round(Number(charter8h) / 8),
+        driverName: driverName || "Unassigned",
+        driverPhone: driverPhone || "+65 9000 0000",
+        status: (isActive ? "active" : "inactive") as VehicleStatus,
+        features: ["Luggage Space", "Air Conditioning", "Executive Seating"],
+      });
+    } finally {
+      setIsSubmitting(false);
+      closeAddVehicleModal();
+    }
   };
 
   return (

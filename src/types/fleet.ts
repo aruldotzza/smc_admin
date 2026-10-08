@@ -1,7 +1,10 @@
+import { VehiclePrices } from "./api";
+
 export type VehicleStatus = "active" | "maintenance" | "inactive";
 
 export interface Vehicle {
   id: string;
+  apiId?: number;
   fleetNumber: string;
   name: string;
   model: string;
@@ -18,4 +21,5 @@ export interface Vehicle {
   imageUrl?: string;
   imagePath?: string;
   lastServiceDate?: string;
+  prices?: VehiclePrices;
 }

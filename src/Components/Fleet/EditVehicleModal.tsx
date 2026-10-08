@@ -44,26 +44,32 @@ export default function EditVehicleModal() {
     }
   }, [editingVehicle]);
 
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
   if (!isEditVehicleModalOpen || !editingVehicle) return null;
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    updateVehicle(editingVehicle.id, {
-      fleetNumber,
-      name,
-      model,
-      imagePath,
-      driverName,
-      driverPhone,
-      paxCapacity: Number(paxCapacity),
-      luggageCapacity: Number(luggageCapacity),
-      baseRate: Number(baseFare),
-      hourlyRate: Math.round(Number(charter8h) / 8),
-      status: (isActive ? "active" : "inactive") as VehicleStatus,
-    });
-
-    closeEditVehicleModal();
+    try {
+      setIsSubmitting(true);
+      await updateVehicle(editingVehicle.id, {
+        fleetNumber,
+        name,
+        model,
+        imagePath,
+        driverName,
+        driverPhone,
+        paxCapacity: Number(paxCapacity),
+        luggageCapacity: Number(luggageCapacity),
+        baseRate: Number(baseFare),
+        hourlyRate: Math.round(Number(charter8h) / 8),
+        status: (isActive ? "active" : "inactive") as VehicleStatus,
+      });
+    } finally {
+      setIsSubmitting(false);
+      closeEditVehicleModal();
+    }
   };
 
   return (
