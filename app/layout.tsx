@@ -2,8 +2,6 @@ import type { Metadata, Viewport } from "next";
 import { manrope, inter, playfair } from "@/fonts";
 import "./globals.css";
 import AppProviders from "@/context/AppProviders";
-import NewBookingModal from "@/Components/Bookings/NewBookingModal";
-import BookingDetailsDrawer from "@/Components/Bookings/BookingDetailsDrawer";
 import AddVehicleModal from "@/Components/Fleet/AddVehicleModal";
 import EditVehicleModal from "@/Components/Fleet/EditVehicleModal";
 
@@ -33,8 +31,6 @@ export default function RootLayout({
       <body className="min-h-screen flex flex-col font-sans bg-[#F8F9FA] text-[#071E3B] antialiased">
         <AppProviders>
           {children}
-          <NewBookingModal />
-          <BookingDetailsDrawer />
           <AddVehicleModal />
           <EditVehicleModal />
         </AppProviders>

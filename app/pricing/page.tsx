@@ -76,7 +76,7 @@ export default function PricingPage() {
 
   return (
     <AdminLayout>
-      <div className="w-full max-w-[1200px] flex flex-col justify-start items-start gap-5 font-['Manrope']">
+      <div className="w-full min-w-0 flex flex-col justify-start items-start gap-5 font-['Manrope']">
         {/* Header */}
         <div className="self-stretch flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
           <div className="inline-flex flex-col justify-start items-start">
@@ -224,15 +224,15 @@ export default function PricingPage() {
             {/* Pricing Rates Table */}
             <div className="w-full bg-color-background-white rounded-xl outline outline-1 outline-offset-[-1px] outline-color-border-subtle flex flex-col justify-start items-start overflow-hidden">
               <div className="w-full overflow-x-auto">
-                <table className="w-full text-left border-collapse min-w-[900px]">
+                <table className="w-full text-left border-collapse min-w-[800px]">
                   <thead>
                     <tr className="bg-stone-100 border-b border-color-border-subtle text-color-input-placeholder text-xs font-semibold font-['Manrope'] uppercase tracking-wide">
-                      <th className="w-56 h-11 px-5 py-3.5">Vehicle</th>
-                      <th className="w-52 h-11 px-5 py-3.5">Capacity</th>
-                      <th className="w-40 h-11 px-5 py-3.5">Base Fare</th>
-                      <th className="w-48 h-11 px-5 py-3.5">Meet & Greet</th>
-                      <th className="w-56 h-11 px-5 py-3.5">3-Hour Charter</th>
-                      <th className="w-56 h-11 px-5 py-3.5">8-Hour Charter</th>
+                      <th className="px-5 py-3.5">Vehicle</th>
+                      <th className="px-5 py-3.5">Capacity</th>
+                      <th className="px-5 py-3.5">Base Fare</th>
+                      <th className="px-5 py-3.5">Meet & Greet</th>
+                      <th className="px-5 py-3.5">3-Hour Charter</th>
+                      <th className="px-5 py-3.5">8-Hour Charter</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-100 text-xs">
@@ -242,29 +242,27 @@ export default function PricingPage() {
                         className="hover:bg-stone-50/60 transition-colors"
                       >
                         {/* Vehicle */}
-                        <td className="w-56 px-5 py-4">
-                          <div className="w-44 flex flex-col justify-start items-start">
-                            <div className="justify-start text-color-text-primary text-xs font-semibold font-['Manrope'] leading-5 truncate">
+                        <td className="px-5 py-4">
+                          <div className="flex flex-col justify-start items-start">
+                            <div className="justify-start text-color-text-primary text-xs font-semibold font-['Manrope'] leading-5">
                               {rate.name}
                             </div>
-                          </div>
-                          <div className="w-44 flex flex-col justify-start items-start">
-                            <div className="justify-start text-color-input-placeholder text-xs font-normal font-['Manrope'] leading-4 truncate">
+                            <div className="justify-start text-color-input-placeholder text-xs font-normal font-['Manrope'] leading-4">
                               {rate.model}
                             </div>
                           </div>
                         </td>
 
                         {/* Capacity */}
-                        <td className="w-52 px-5 py-4">
+                        <td className="px-5 py-4">
                           <div className="justify-start text-color-input-placeholder text-xs font-normal font-['Manrope'] leading-5">
                             {rate.capacityText}
                           </div>
                         </td>
 
                         {/* Base Fare */}
-                        <td className="w-40 px-5 py-4">
-                          <div className="inline-flex items-center gap-1 bg-stone-50 hover:bg-white border border-color-border-subtle rounded-md px-2 py-1 focus-within:ring-1 focus-within:ring-amber-500">
+                        <td className="px-5 py-4">
+                          <div className="inline-flex items-center gap-1 bg-stone-50 hover:bg-white border border-color-border-subtle rounded-md px-2.5 py-1.5 focus-within:ring-1 focus-within:ring-amber-500">
                             <span className="text-orange-400 font-semibold text-sm font-['Manrope']">
                               $
                             </span>
@@ -274,14 +272,14 @@ export default function PricingPage() {
                               onChange={(e) =>
                                 updateRate(rate.id, "baseFare", Number(e.target.value))
                               }
-                              className="w-12 text-center text-orange-400 font-semibold text-sm font-['Manrope'] bg-transparent outline-none"
+                              className="w-16 text-center text-orange-400 font-semibold text-sm font-['Manrope'] bg-transparent outline-none"
                             />
                           </div>
                         </td>
 
                         {/* Meet & Greet */}
-                        <td className="w-48 px-5 py-4">
-                          <div className="inline-flex items-center gap-1 bg-stone-50 hover:bg-white border border-color-border-subtle rounded-md px-2 py-1 focus-within:ring-1 focus-within:ring-amber-500">
+                        <td className="px-5 py-4">
+                          <div className="inline-flex items-center gap-1 bg-stone-50 hover:bg-white border border-color-border-subtle rounded-md px-2.5 py-1.5 focus-within:ring-1 focus-within:ring-amber-500">
                             <span className="text-orange-400 font-semibold text-sm font-['Manrope']">
                               $
                             </span>
@@ -295,14 +293,14 @@ export default function PricingPage() {
                                   Number(e.target.value)
                                 )
                               }
-                              className="w-12 text-center text-orange-400 font-semibold text-sm font-['Manrope'] bg-transparent outline-none"
+                              className="w-16 text-center text-orange-400 font-semibold text-sm font-['Manrope'] bg-transparent outline-none"
                             />
                           </div>
                         </td>
 
                         {/* 3-Hour Charter */}
-                        <td className="w-56 px-5 py-4">
-                          <div className="inline-flex items-center gap-1 bg-stone-50 hover:bg-white border border-color-border-subtle rounded-md px-2 py-1 focus-within:ring-1 focus-within:ring-amber-500">
+                        <td className="px-5 py-4">
+                          <div className="inline-flex items-center gap-1 bg-stone-50 hover:bg-white border border-color-border-subtle rounded-md px-2.5 py-1.5 focus-within:ring-1 focus-within:ring-amber-500">
                             <span className="text-orange-400 font-semibold text-sm font-['Manrope']">
                               $
                             </span>
@@ -312,14 +310,14 @@ export default function PricingPage() {
                               onChange={(e) =>
                                 updateRate(rate.id, "charter3h", Number(e.target.value))
                               }
-                              className="w-14 text-center text-orange-400 font-semibold text-sm font-['Manrope'] bg-transparent outline-none"
+                              className="w-16 text-center text-orange-400 font-semibold text-sm font-['Manrope'] bg-transparent outline-none"
                             />
                           </div>
                         </td>
 
                         {/* 8-Hour Charter */}
-                        <td className="w-56 px-5 py-4">
-                          <div className="inline-flex items-center gap-1 bg-stone-50 hover:bg-white border border-color-border-subtle rounded-md px-2 py-1 focus-within:ring-1 focus-within:ring-amber-500">
+                        <td className="px-5 py-4">
+                          <div className="inline-flex items-center gap-1 bg-stone-50 hover:bg-white border border-color-border-subtle rounded-md px-2.5 py-1.5 focus-within:ring-1 focus-within:ring-amber-500">
                             <span className="text-orange-400 font-semibold text-sm font-['Manrope']">
                               $
                             </span>
@@ -329,7 +327,7 @@ export default function PricingPage() {
                               onChange={(e) =>
                                 updateRate(rate.id, "charter8h", Number(e.target.value))
                               }
-                              className="w-14 text-center text-orange-400 font-semibold text-sm font-['Manrope'] bg-transparent outline-none"
+                              className="w-16 text-center text-orange-400 font-semibold text-sm font-['Manrope'] bg-transparent outline-none"
                             />
                           </div>
                         </td>

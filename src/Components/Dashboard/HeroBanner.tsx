@@ -4,34 +4,27 @@ import React from "react";
 import Link from "next/link";
 
 export default function HeroBanner() {
-  const getGreeting = () => {
-    const hour = new Date().getHours();
-    if (hour < 12) return "Good morning";
-    if (hour < 18) return "Good afternoon";
-    return "Good evening";
-  };
-
   return (
-    <div className="self-stretch p-6 sm:p-8 bg-color-background-brand rounded-2xl flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6">
+    <div className="self-stretch p-8 bg-color-background-brand rounded-2xl flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6">
       <div className="max-w-md inline-flex flex-col justify-start items-start">
         <div className="self-stretch flex flex-col justify-start items-start">
           <div className="justify-start text-orange-400 text-xs font-bold font-['Manrope'] uppercase leading-4 tracking-widest">
-            {getGreeting()}
+            Good Morning
           </div>
         </div>
         <div className="self-stretch pt-1 flex flex-col justify-start items-start">
-          <div className="justify-start text-color-text-inverse text-2xl sm:text-3xl font-bold font-['Manrope'] leading-8 sm:leading-10">
+          <div className="justify-start text-color-text-inverse text-2xl sm:text-3xl font-bold font-['Manrope'] leading-10">
             Welcome back, Owner
           </div>
         </div>
         <div className="self-stretch pt-1 flex flex-col justify-start items-start">
           <div className="justify-start text-white/60 text-xs font-normal font-['Manrope'] leading-5">
-            Here&apos;s what&apos;s happening with your business today.
+            Here&apos;s what&apos;s happening with your business today
           </div>
         </div>
       </div>
 
-      <div className="flex justify-start items-start gap-3">
+      <div className="flex justify-start items-start gap-3 flex-shrink-0">
         <Link
           href="/bookings"
           className="px-5 py-2.5 bg-color-background-accent rounded-lg inline-flex flex-col justify-start items-start hover:brightness-105 transition-all cursor-pointer"

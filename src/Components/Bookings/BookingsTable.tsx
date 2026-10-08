@@ -3,6 +3,7 @@
 import React from "react";
 import { useBookings } from "@/context/BookingContext";
 import { Booking } from "@/types/booking";
+import { Globe, PhoneCall, Mail } from "lucide-react";
 
 export default function BookingsTable() {
   const { filteredBookings, activeBookingId, openBookingDetails } = useBookings();
@@ -11,19 +12,28 @@ export default function BookingsTable() {
     switch (channel) {
       case "website":
         return {
-          bg: "bg-blue-50 outline-blue-200 text-blue-700",
+          bg: "bg-blue-50 outline outline-1 outline-offset-[-1px] outline-blue-200 text-blue-700",
           text: "Website",
+          icon: Globe,
         };
       case "whatsapp":
         return {
-          bg: "bg-green-50 outline-green-200 text-green-700",
+          bg: "bg-green-50 outline outline-1 outline-offset-[-1px] outline-green-200 text-green-700",
           text: "WhatsApp",
+          icon: null, // Custom green dot or WhatsApp
+        };
+      case "email":
+        return {
+          bg: "bg-amber-50 outline outline-1 outline-offset-[-1px] outline-amber-200 text-amber-700",
+          text: "Email",
+          icon: Mail,
         };
       case "phone":
       default:
         return {
-          bg: "bg-purple-50 outline-purple-200 text-purple-700",
+          bg: "bg-purple-50 outline outline-1 outline-offset-[-1px] outline-purple-200 text-purple-700",
           text: "Phone Call",
+          icon: PhoneCall,
         };
     }
   };
@@ -32,27 +42,28 @@ export default function BookingsTable() {
     switch (status) {
       case "confirmed":
         return {
-          bg: "bg-blue-50 outline-blue-200 text-blue-700",
+          bg: "bg-blue-50 outline outline-1 outline-offset-[-1px] outline-blue-200 text-blue-700",
           text: "Confirmed",
         };
       case "pending":
         return {
-          bg: "bg-amber-50 outline-amber-200 text-amber-700",
+          bg: "bg-amber-50 outline outline-1 outline-offset-[-1px] outline-amber-200 text-amber-700",
           text: "Pending",
         };
       case "in_progress":
         return {
-          bg: "bg-purple-50 outline-purple-200 text-purple-700",
+          bg: "bg-purple-50 outline outline-1 outline-offset-[-1px] outline-purple-200 text-purple-700",
           text: "In-progress",
         };
       case "completed":
         return {
-          bg: "bg-green-50 outline-green-200 text-green-700",
+          bg: "bg-green-50 outline outline-1 outline-offset-[-1px] outline-green-200 text-green-700",
           text: "Completed",
         };
       case "cancelled":
+      default:
         return {
-          bg: "bg-stone-100 outline-color-border-subtle text-color-input-placeholder",
+          bg: "bg-stone-100 outline outline-1 outline-offset-[-1px] outline-color-border-subtle text-color-input-placeholder",
           text: "Cancelled",
         };
     }
@@ -60,7 +71,7 @@ export default function BookingsTable() {
 
   if (filteredBookings.length === 0) {
     return (
-      <div className="w-full bg-color-background-white rounded-xl outline outline-1 outline-offset-[-1px] outline-color-border-subtle p-12 text-center flex flex-col items-center justify-center">
+      <div className="w-full bg-color-background-white rounded-xl outline outline-1 outline-offset-[-1px] outline-color-border-subtle p-12 text-center flex flex-col items-center justify-center font-['Manrope']">
         <div className="justify-start text-color-text-primary text-sm font-semibold font-['Manrope']">
           No bookings found
         </div>
@@ -74,16 +85,16 @@ export default function BookingsTable() {
   return (
     <div className="w-full bg-color-background-white rounded-xl outline outline-1 outline-offset-[-1px] outline-color-border-subtle flex flex-col justify-start items-start overflow-hidden font-['Manrope']">
       <div className="w-full overflow-x-auto">
-        <table className="w-full text-left border-collapse min-w-[900px]">
+        <table className="w-full text-left border-collapse min-w-[760px]">
           <thead>
             <tr className="bg-stone-100 border-b border-color-border-subtle text-color-input-placeholder text-xs font-semibold font-['Manrope'] uppercase tracking-wide">
-              <th className="w-44 h-10 px-4 py-3">Ref / Customer</th>
-              <th className="w-48 h-10 px-4 py-3">Contact</th>
-              <th className="w-72 h-10 px-4 py-3">Route</th>
-              <th className="w-36 h-10 px-4 py-3">Date</th>
-              <th className="w-40 h-10 px-4 py-3">Source</th>
-              <th className="w-36 h-10 px-4 py-3">Status</th>
-              <th className="w-24 h-10 px-4 py-3">Fare</th>
+              <th className="px-4 py-3">Ref / Customer</th>
+              <th className="px-4 py-3">Contact</th>
+              <th className="px-4 py-3">Route</th>
+              <th className="px-4 py-3">Date</th>
+              <th className="px-4 py-3">Source</th>
+              <th className="px-4 py-3">Status</th>
+              <th className="px-4 py-3">Fare</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-100 text-xs">
@@ -91,6 +102,7 @@ export default function BookingsTable() {
               const isSelected = booking.id === activeBookingId;
               const srcBadge = getSourceBadge(booking.channel);
               const statBadge = getStatusBadge(booking.status);
+              const Icon = srcBadge.icon;
 
               return (
                 <tr
@@ -103,13 +115,11 @@ export default function BookingsTable() {
                   }`}
                 >
                   {/* Ref / Customer */}
-                  <td className="w-44 px-4 py-3">
-                    <div className="w-36 flex flex-col justify-start items-start">
+                  <td className="px-4 py-3">
+                    <div className="flex flex-col justify-start items-start">
                       <div className="justify-start text-orange-400 text-xs font-semibold font-['Manrope'] leading-4">
                         {booking.refNumber}
                       </div>
-                    </div>
-                    <div className="w-36 flex flex-col justify-start items-start">
                       <div className="justify-start text-color-text-primary text-xs font-medium font-['Manrope'] leading-5 truncate">
                         {booking.customerName}
                       </div>
@@ -117,27 +127,25 @@ export default function BookingsTable() {
                   </td>
 
                   {/* Contact */}
-                  <td className="w-48 px-4 py-3">
-                    <div className="w-40 flex flex-col justify-start items-start">
+                  <td className="px-4 py-3">
+                    <div className="flex flex-col justify-start items-start">
                       <div className="justify-start text-color-text-primary text-xs font-normal font-['Manrope'] leading-4">
                         {booking.phone}
                       </div>
-                    </div>
-                    <div className="w-40 h-4 max-w-40 flex flex-col justify-start items-start overflow-hidden">
-                      <div className="justify-start text-color-input-placeholder text-xs font-normal font-['Manrope'] leading-4 truncate">
-                        {booking.email}
+                      <div className="max-w-[160px] 2xl:max-w-xs flex flex-col justify-start items-start overflow-hidden">
+                        <div className="justify-start text-color-input-placeholder text-xs font-normal font-['Manrope'] leading-4 truncate">
+                          {booking.email}
+                        </div>
                       </div>
                     </div>
                   </td>
 
                   {/* Route */}
-                  <td className="w-72 px-4 py-3">
-                    <div className="w-64 h-4 max-w-64 flex flex-col justify-start items-start overflow-hidden">
-                      <div className="self-stretch justify-start text-color-text-primary text-xs font-normal font-['Manrope'] leading-4 truncate">
+                  <td className="px-4 py-3">
+                    <div className="max-w-[220px] 2xl:max-w-md flex flex-col justify-start items-start overflow-hidden">
+                      <div className="justify-start text-color-text-primary text-xs font-normal font-['Manrope'] leading-4 truncate">
                         {booking.pickupLocation}
                       </div>
-                    </div>
-                    <div className="w-64 h-4 max-w-64 flex flex-col justify-start items-start overflow-hidden">
                       <div className="justify-start text-color-input-placeholder text-xs font-normal font-['Manrope'] leading-4 truncate">
                         → {booking.dropoffLocation}
                       </div>
@@ -145,24 +153,29 @@ export default function BookingsTable() {
                   </td>
 
                   {/* Date & Time */}
-                  <td className="w-36 px-4 py-3">
-                    <div className="w-28 flex flex-col justify-start items-start">
+                  <td className="px-4 py-3 whitespace-nowrap">
+                    <div className="flex flex-col justify-start items-start">
                       <div className="justify-start text-color-text-primary text-xs font-normal font-['Manrope'] leading-4">
                         {booking.pickupDate}
                       </div>
-                    </div>
-                    <div className="w-28 flex flex-col justify-start items-start">
-                      <div className="justify-start text-color-input-placeholder text-xs font-normal font-['Manrope'] leading-4">
-                        {booking.pickupTime}
-                      </div>
+                      {booking.pickupTime && (
+                        <div className="justify-start text-color-input-placeholder text-xs font-normal font-['Manrope'] leading-4">
+                          {booking.pickupTime}
+                        </div>
+                      )}
                     </div>
                   </td>
 
                   {/* Source */}
-                  <td className="w-40 px-4 py-3">
+                  <td className="px-4 py-3 whitespace-nowrap">
                     <div
-                      className={`px-2 py-0.5 rounded-full outline outline-1 outline-offset-[-1px] inline-flex justify-start items-center gap-1 ${srcBadge.bg}`}
+                      className={`px-2 py-0.5 rounded-full inline-flex justify-start items-center gap-1 ${srcBadge.bg}`}
                     >
+                      {Icon ? (
+                        <Icon className="size-2.5 flex-shrink-0" />
+                      ) : (
+                        <div className="size-2.5 bg-green-700 rounded-full flex-shrink-0" />
+                      )}
                       <div className="text-[10px] font-semibold font-['Manrope'] leading-4">
                         {srcBadge.text}
                       </div>
@@ -170,9 +183,9 @@ export default function BookingsTable() {
                   </td>
 
                   {/* Status */}
-                  <td className="w-36 px-4 py-3">
+                  <td className="px-4 py-3 whitespace-nowrap">
                     <div
-                      className={`px-2.5 py-0.5 rounded-full outline outline-1 outline-offset-[-1px] inline-flex justify-start items-center ${statBadge.bg}`}
+                      className={`px-2.5 py-0.5 rounded-full inline-flex justify-start items-center ${statBadge.bg}`}
                     >
                       <div className="text-[10px] font-semibold font-['Manrope'] leading-4">
                         {statBadge.text}
@@ -181,7 +194,7 @@ export default function BookingsTable() {
                   </td>
 
                   {/* Fare */}
-                  <td className="w-24 px-4 py-3">
+                  <td className="px-4 py-3 whitespace-nowrap">
                     <div className="justify-start text-color-text-primary text-xs font-semibold font-['Manrope'] leading-5">
                       ${booking.fare}
                     </div>

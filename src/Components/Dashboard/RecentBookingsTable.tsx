@@ -9,7 +9,22 @@ import { Booking } from "@/types/booking";
 export default function RecentBookingsTable() {
   const router = useRouter();
   const { bookings, openBookingDetails } = useBookings();
-  const recentList = bookings.slice(0, 6);
+
+  // In Screenshot 2, the Recent Bookings sequence is:
+  // Sarah Lim, Mei Lin Wong, David Ng, Aditya Kumar, Chen Wei, Raj Patel
+  // Let's sort to show pending/recent active bookings
+  const sortedBookings = [...bookings].sort((a, b) => {
+    const priority: Record<string, number> = {
+      pending: 1,
+      confirmed: 2,
+      in_progress: 3,
+      completed: 4,
+      cancelled: 5,
+    };
+    return (priority[a.status] || 99) - (priority[b.status] || 99);
+  });
+
+  const recentList = sortedBookings.slice(0, 6);
 
   const getInitials = (name: string) => {
     return name
@@ -24,33 +39,29 @@ export default function RecentBookingsTable() {
     switch (status) {
       case "pending":
         return {
-          bg: "bg-amber-50 outline-amber-200 text-amber-700",
+          bg: "bg-amber-50 outline outline-1 outline-offset-[-1px] outline-amber-200 text-amber-700",
           text: "Pending",
-          width: "w-14",
         };
       case "confirmed":
         return {
-          bg: "bg-blue-50 outline-blue-200 text-blue-700",
+          bg: "bg-blue-50 outline outline-1 outline-offset-[-1px] outline-blue-200 text-blue-700",
           text: "Confirmed",
-          width: "w-16",
         };
       case "in_progress":
         return {
-          bg: "bg-purple-50 outline-purple-200 text-purple-700",
+          bg: "bg-purple-50 outline outline-1 outline-offset-[-1px] outline-purple-200 text-purple-700",
           text: "In-progress",
-          width: "w-20",
         };
       case "completed":
         return {
-          bg: "bg-green-50 outline-green-200 text-green-700",
+          bg: "bg-green-50 outline outline-1 outline-offset-[-1px] outline-green-200 text-green-700",
           text: "Completed",
-          width: "w-16",
         };
       case "cancelled":
+      default:
         return {
-          bg: "bg-stone-100 outline-color-border-subtle text-color-input-placeholder",
+          bg: "bg-stone-100 outline outline-1 outline-offset-[-1px] outline-color-border-subtle text-color-input-placeholder",
           text: "Cancelled",
-          width: "w-16",
         };
     }
   };
@@ -61,17 +72,17 @@ export default function RecentBookingsTable() {
   };
 
   return (
-    <div className="self-stretch bg-color-background-white rounded-xl outline outline-1 outline-offset-[-1px] outline-color-border-subtle inline-flex flex-col justify-start items-start overflow-hidden">
+    <div className="w-full bg-color-background-white rounded-xl outline outline-1 outline-offset-[-1px] outline-color-border-subtle flex flex-col justify-start items-start overflow-hidden shadow-xs">
       {/* Header */}
-      <div className="self-stretch px-5 py-4 border-b border-color-border-subtle inline-flex justify-between items-center">
-        <div className="inline-flex flex-col justify-start items-start">
+      <div className="w-full px-5 py-4 border-b border-color-border-subtle flex justify-between items-center">
+        <div className="flex flex-col justify-start items-start">
           <div className="justify-start text-color-text-primary text-base font-bold font-['Manrope'] leading-6">
             Recent Bookings
           </div>
         </div>
         <Link
           href="/bookings"
-          className="inline-flex flex-col justify-start items-start hover:opacity-80 transition-opacity"
+          className="flex flex-col justify-start items-start hover:opacity-80 transition-opacity"
         >
           <div className="justify-start text-orange-400 text-xs font-semibold font-['Manrope'] leading-4">
             View all →
@@ -80,55 +91,64 @@ export default function RecentBookingsTable() {
       </div>
 
       {/* Rows */}
-      <div className="self-stretch flex flex-col justify-start items-start">
-        {recentList.map((booking, idx) => {
+      <div className="w-full flex flex-col justify-start items-start divide-y divide-gray-100">
+        {recentList.map((booking) => {
           const badge = getStatusBadge(booking.status);
-          const isLast = idx === recentList.length - 1;
 
           return (
             <div
               key={booking.id}
               onClick={() => handleRowClick(booking.id)}
-              className={`self-stretch px-5 py-3.5 ${
-                isLast ? "" : "border-b border-gray-100"
-              } inline-flex justify-start items-center gap-3 hover:bg-[#EEF5FB]/40 transition-colors cursor-pointer`}
+              className="w-full px-5 py-4 flex justify-between items-center gap-4 hover:bg-[#EEF5FB]/50 transition-colors cursor-pointer"
             >
-              {/* Avatar */}
-              <div className="size-8 bg-color-background-brand rounded-full flex justify-center items-center flex-shrink-0">
-                <div className="inline-flex flex-col justify-start items-start">
-                  <div className="justify-start text-color-text-inverse text-[10px] font-bold font-['Manrope'] leading-4">
+              {/* Left: Avatar + Customer & Route Info */}
+              <div className="flex items-center gap-3.5 flex-1 min-w-0">
+                {/* Avatar */}
+                <div className="size-9 bg-color-background-brand rounded-full flex justify-center items-center flex-shrink-0">
+                  <div className="text-color-text-inverse text-[11px] font-bold font-['Manrope'] leading-4">
                     {getInitials(booking.customerName)}
                   </div>
                 </div>
-              </div>
 
-              {/* Customer & Route */}
-              <div className="flex-1 min-w-0 inline-flex flex-col justify-start items-start">
-                <div className="self-stretch h-5 flex flex-col justify-start items-start overflow-hidden">
-                  <div className="justify-start text-color-text-primary text-xs font-semibold font-['Manrope'] leading-5 truncate">
-                    {booking.customerName}
+                {/* Customer & Route */}
+                <div className="flex-1 min-w-0 flex flex-col justify-start items-start">
+                  <div className="w-full flex items-center gap-2 overflow-hidden">
+                    <span className="text-color-text-primary text-xs sm:text-sm font-semibold font-['Manrope'] leading-5 truncate">
+                      {booking.customerName}
+                    </span>
+                    <span className="text-orange-400 text-[11px] font-semibold font-['Manrope'] hidden sm:inline">
+                      • {booking.refNumber}
+                    </span>
                   </div>
-                </div>
-                <div className="self-stretch h-4 flex flex-col justify-start items-start overflow-hidden">
-                  <div className="justify-start text-color-input-placeholder text-xs font-normal font-['Manrope'] leading-4 truncate">
+                  <div className="w-full text-color-input-placeholder text-xs font-normal font-['Manrope'] leading-4 truncate">
                     {booking.pickupLocation} → {booking.dropoffLocation}
                   </div>
                 </div>
               </div>
 
-              {/* Status & Date */}
+              {/* Middle: Vehicle & Fare on larger screens */}
+              <div className="hidden sm:flex flex-col justify-start items-end flex-shrink-0 px-2">
+                <div className="text-color-text-primary text-xs font-bold font-['Manrope'] leading-5">
+                  ${booking.fare} SGD
+                </div>
+                <div className="text-color-input-placeholder text-[10px] font-normal font-['Manrope'] leading-4 capitalize">
+                  {booking.vehicleName || "Maxi Cab"}
+                </div>
+              </div>
+
+              {/* Right: Status & Date */}
               <div className="flex flex-col justify-start items-end flex-shrink-0">
                 <div className="h-6 flex items-center justify-end">
                   <div
-                    className={`h-5 px-2.5 flex items-center justify-center rounded-full outline outline-1 outline-offset-[-1px] ${badge.bg}`}
+                    className={`h-5 px-2.5 flex items-center justify-center rounded-full ${badge.bg}`}
                   >
-                    <div className="text-right justify-start text-[10px] font-semibold font-['Manrope'] leading-4">
+                    <div className="text-right text-[10px] font-semibold font-['Manrope'] leading-4">
                       {badge.text}
                     </div>
                   </div>
                 </div>
                 <div className="h-5 pt-0.5 flex flex-col justify-start items-end">
-                  <div className="text-right justify-start text-color-input-placeholder text-xs font-normal font-['Manrope'] leading-4">
+                  <div className="text-right text-color-input-placeholder text-xs font-normal font-['Manrope'] leading-4">
                     {booking.pickupDate}
                   </div>
                 </div>

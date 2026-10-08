@@ -25,8 +25,8 @@ export default function AdminLayout({
         <TopNav onOpenMobileMenu={() => setMobileMenuOpen(true)} />
 
         {/* Main Body Content */}
-        <main className="self-stretch flex-1 p-4 sm:p-6 flex flex-col justify-start items-start overflow-y-auto">
-          <div className="w-full max-w-[1200px] mx-auto flex flex-col justify-start items-start gap-6">
+        <main className="self-stretch flex-1 p-4 sm:p-6 lg:p-8 flex flex-col justify-start items-start overflow-y-auto">
+          <div className="w-full min-w-0 flex flex-col justify-start items-start gap-6">
             {children}
           </div>
         </main>

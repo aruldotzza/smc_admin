@@ -13,7 +13,7 @@ export default function FleetPage() {
 
   return (
     <AdminLayout>
-      <div className="w-full max-w-[1200px] flex flex-col justify-start items-start gap-5 font-['Manrope']">
+      <div className="w-full min-w-0 flex flex-col justify-start items-start gap-5 font-['Manrope']">
         {/* Page Header matching FlletPage.html */}
         <div className="self-stretch flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
           <div className="inline-flex flex-col justify-start items-start">
@@ -44,7 +44,7 @@ export default function FleetPage() {
         </div>
 
         {/* Fleet Grid (6 vehicles) */}
-        <div className="self-stretch grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+        <div className="self-stretch grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-5">
           {vehicles.map((vehicle) => (
             <FleetCard key={vehicle.id} vehicle={vehicle} />
           ))}

@@ -2,6 +2,7 @@
 
 import React from "react";
 import { useBookings } from "@/context/BookingContext";
+import { Search } from "lucide-react";
 
 export default function BookingsFilterTabs() {
   const {
@@ -22,8 +23,8 @@ export default function BookingsFilterTabs() {
   ];
 
   return (
-    <div className="self-stretch flex flex-col justify-start items-start gap-3">
-      {/* Filter Tabs matching bookingspaeg.html */}
+    <div className="self-stretch flex flex-col justify-start items-start gap-4">
+      {/* Filter Tabs matching bookingspaeg.html & Screenshot 3 */}
       <div className="self-stretch inline-flex justify-start items-start gap-2 overflow-x-auto pb-1">
         {tabs.map((tab) => {
           const isActive = statusFilter === tab.key;
@@ -52,9 +53,8 @@ export default function BookingsFilterTabs() {
 
       {/* Search Input matching bookingspaeg.html */}
       <div className="self-stretch h-10 relative">
-        <div className="size-4 left-[14px] top-[12.75px] absolute overflow-hidden pointer-events-none">
-          <div className="size-2.5 left-[2px] top-[2px] absolute outline outline-[1.40px] outline-offset-[-0.70px] outline-gray-500" />
-          <div className="size-[3px] left-[11px] top-[11px] absolute outline outline-[1.40px] outline-offset-[-0.70px] outline-gray-500" />
+        <div className="size-4 left-3.5 top-3 absolute flex items-center justify-center pointer-events-none text-gray-500">
+          <Search className="size-4 text-gray-400" />
         </div>
         <input
           type="text"
