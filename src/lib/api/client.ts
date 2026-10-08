@@ -4,6 +4,7 @@ export interface RequestOptions extends RequestInit {
   params?: Record<string, string | number | boolean | undefined>;
   requiresAuth?: boolean;
   idempotencyKey?: string;
+  forceRefresh?: boolean;
 }
 
 export class ApiClientError extends Error {
@@ -12,7 +13,13 @@ export class ApiClientError extends Error {
   details?: unknown;
   requestId?: string;
 
-  constructor(message: string, status: number, code: string = "API_ERROR", details?: unknown, requestId?: string) {
+  constructor(
+    message: string,
+    status: number,
+    code: string = "API_ERROR",
+    details?: unknown,
+    requestId?: string
+  ) {
     super(message);
     this.name = "ApiClientError";
     this.status = status;
@@ -22,8 +29,33 @@ export class ApiClientError extends Error {
   }
 }
 
+// In-memory cache for GET requests to prevent duplicate calls across contexts & navigations
+interface CacheEntry<T> {
+  timestamp: number;
+  data: T;
+}
+
+const RESPONSE_CACHE = new Map<string, CacheEntry<any>>();
+const IN_FLIGHT_REQUESTS = new Map<string, Promise<any>>();
+const GET_CACHE_TTL_MS = 60 * 1000; // 60 seconds TTL for read queries
+
 /**
- * Universal API Request handler for Singapore Maxicabs Admin
+ * Manually invalidate cached API responses (e.g. after adding/updating vehicles or pricing)
+ */
+export function invalidateApiCache(pattern?: string) {
+  if (!pattern) {
+    RESPONSE_CACHE.clear();
+    return;
+  }
+  for (const key of Array.from(RESPONSE_CACHE.keys())) {
+    if (key.includes(pattern)) {
+      RESPONSE_CACHE.delete(key);
+    }
+  }
+}
+
+/**
+ * Universal API Request handler with in-flight deduplication and intelligent caching
  */
 export async function apiRequest<T>(
   endpoint: string,
@@ -33,9 +65,12 @@ export async function apiRequest<T>(
     params,
     requiresAuth = false,
     idempotencyKey,
+    forceRefresh = false,
     headers: customHeaders = {},
     ...customOptions
   } = options;
+
+  const method = (customOptions.method || "GET").toUpperCase();
 
   // Format query string if params are provided
   let queryString = "";
@@ -55,81 +90,135 @@ export async function apiRequest<T>(
   // Determine whether to use client-side proxy or direct backend URL
   const isClient = typeof window !== "undefined";
   const cleanEndpoint = endpoint.startsWith("/") ? endpoint : `/${endpoint}`;
-  
+
   // Use proxy on browser to eliminate CORS issues; direct URL on server
   const url = isClient
     ? `${API_CONFIG.PROXY_PREFIX}${cleanEndpoint}${queryString}`
     : `${API_CONFIG.BASE_URL}${cleanEndpoint}${queryString}`;
 
-  const headers: Record<string, string> = {
-    Accept: "application/json",
-    ...(customHeaders as Record<string, string>),
-  };
+  const cacheKey = `${method}:${cleanEndpoint}${queryString}`;
 
-  // Set JSON Content-Type for mutation methods if body is present
-  if (
-    customOptions.body &&
-    typeof customOptions.body === "string" &&
-    !headers["Content-Type"]
-  ) {
-    headers["Content-Type"] = "application/json";
+  // If this is a mutation, invalidate cache for this endpoint family
+  if (["POST", "PUT", "PATCH", "DELETE"].includes(method)) {
+    invalidateApiCache(cleanEndpoint.split("/")[1] || cleanEndpoint);
   }
 
-  // Admin authentication header
-  if (requiresAuth && API_CONFIG.ADMIN_API_KEY) {
-    headers["Authorization"] = `Bearer ${API_CONFIG.ADMIN_API_KEY}`;
+  // 1. For GET requests: check response cache
+  if (method === "GET" && !forceRefresh) {
+    const cached = RESPONSE_CACHE.get(cacheKey);
+    if (cached && Date.now() - cached.timestamp < GET_CACHE_TTL_MS) {
+      return cached.data as T;
+    }
+
+    // 2. In-flight request deduplication: if identical GET request is in-flight, return the existing Promise!
+    if (IN_FLIGHT_REQUESTS.has(cacheKey)) {
+      return IN_FLIGHT_REQUESTS.get(cacheKey) as Promise<T>;
+    }
   }
 
-  // Idempotency key if supplied
-  if (idempotencyKey) {
-    headers["Idempotency-Key"] = idempotencyKey;
-  }
+  // Execute request
+  const fetchPromise = (async () => {
+    const headers: Record<string, string> = {
+      Accept: "application/json",
+      ...(customHeaders as Record<string, string>),
+    };
 
-  try {
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), API_CONFIG.TIMEOUT);
+    // Set JSON Content-Type for mutation methods if body is present
+    if (
+      customOptions.body &&
+      typeof customOptions.body === "string" &&
+      !headers["Content-Type"]
+    ) {
+      headers["Content-Type"] = "application/json";
+    }
 
-    const response = await fetch(url, {
-      ...customOptions,
-      headers,
-      signal: controller.signal,
-      cache: "no-store",
-    });
+    // Admin authentication header
+    if (requiresAuth && API_CONFIG.ADMIN_API_KEY) {
+      headers["Authorization"] = `Bearer ${API_CONFIG.ADMIN_API_KEY}`;
+    }
 
-    clearTimeout(timeoutId);
+    // Idempotency key if supplied
+    if (idempotencyKey) {
+      headers["Idempotency-Key"] = idempotencyKey;
+    }
 
-    const contentType = response.headers.get("content-type") || "";
-    const isJson = contentType.includes("application/json");
-    const data = isJson ? await response.json() : await response.text();
+    try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), API_CONFIG.TIMEOUT);
 
-    if (!response.ok) {
-      const errorCode = (data && typeof data === "object" && (data.error || data.code)) || `HTTP_${response.status}`;
-      const errorMessage =
-        (data && typeof data === "object" && (data.message || data.error)) ||
-        `Request failed with status ${response.status}`;
-      const requestId = data && typeof data === "object" ? data.requestId : undefined;
+      const response = await fetch(url, {
+        ...customOptions,
+        headers,
+        signal: controller.signal,
+        cache: "no-store",
+      });
 
+      clearTimeout(timeoutId);
+
+      const contentType = response.headers.get("content-type") || "";
+      const isJson = contentType.includes("application/json");
+      const data = isJson ? await response.json() : await response.text();
+
+      if (!response.ok) {
+        let errorCode = `HTTP_${response.status}`;
+        let errorMessage = `Request failed with status ${response.status}`;
+
+        if (data && typeof data === "object") {
+          if (typeof data.error === "string") {
+            errorCode = data.error;
+            errorMessage = data.message || data.error;
+          } else if (data.error && typeof data.error === "object") {
+            errorCode = data.error.code || errorCode;
+            errorMessage = data.error.message || errorMessage;
+          } else {
+            errorCode = data.code || errorCode;
+            errorMessage = data.message || errorMessage;
+          }
+        }
+
+        const requestId =
+          data && typeof data === "object" ? data.requestId : undefined;
+
+        throw new ApiClientError(
+          errorMessage,
+          response.status,
+          errorCode,
+          data,
+          requestId
+        );
+      }
+
+      // Store in GET cache
+      if (method === "GET") {
+        RESPONSE_CACHE.set(cacheKey, {
+          timestamp: Date.now(),
+          data,
+        });
+      }
+
+      return data as T;
+    } catch (error: any) {
+      if (error instanceof ApiClientError) {
+        throw error;
+      }
+      if (error.name === "AbortError") {
+        throw new ApiClientError("Request timed out", 408, "TIMEOUT");
+      }
       throw new ApiClientError(
-        errorMessage,
-        response.status,
-        errorCode,
-        data,
-        requestId
+        error?.message || "Network request failed",
+        500,
+        "NETWORK_ERROR"
       );
+    } finally {
+      if (method === "GET") {
+        IN_FLIGHT_REQUESTS.delete(cacheKey);
+      }
     }
+  })();
 
-    return data as T;
-  } catch (error: any) {
-    if (error instanceof ApiClientError) {
-      throw error;
-    }
-    if (error.name === "AbortError") {
-      throw new ApiClientError("Request timed out", 408, "TIMEOUT");
-    }
-    throw new ApiClientError(
-      error?.message || "Network request failed",
-      500,
-      "NETWORK_ERROR"
-    );
+  if (method === "GET") {
+    IN_FLIGHT_REQUESTS.set(cacheKey, fetchPromise);
   }
+
+  return fetchPromise;
 }

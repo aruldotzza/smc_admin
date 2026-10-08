@@ -1,8 +1,8 @@
 "use client";
 
-import React, { createContext, useContext, useState, useEffect, useCallback } from "react";
+import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from "react";
 import { VehiclePricingRate, PricingTab } from "@/types/pricing";
-import { initialPricingRates } from "@/data/initialPricing";
+import { initialPricingRates, initialAddOns, initialDistanceRules } from "@/data/initialPricing";
 import {
   getVehicles,
   setVehicleServiceRate,
@@ -13,6 +13,7 @@ import {
   updateDistanceRule,
   createDistanceRule,
 } from "@/lib/api/services";
+import { invalidateApiCache } from "@/lib/api/client";
 import {
   ApiAddOn,
   ApiDistanceRule,
@@ -35,7 +36,7 @@ interface PricingContextType {
   saveAllChanges: () => Promise<void>;
   resetToDefaults: () => void;
   isLoading: boolean;
-  refreshPricingData: () => Promise<void>;
+  refreshPricingData: (forceFresh?: boolean) => Promise<void>;
 
   // Tabs
   activeTab: PricingTab;
@@ -64,8 +65,8 @@ const PricingContext = createContext<PricingContextType | undefined>(undefined);
 
 export function PricingProvider({ children }: { children: React.ReactNode }) {
   const [rates, setRates] = useState<VehiclePricingRate[]>(initialPricingRates);
-  const [addOns, setAddOns] = useState<ApiAddOn[]>([]);
-  const [distanceRules, setDistanceRules] = useState<ApiDistanceRule[]>([]);
+  const [addOns, setAddOns] = useState<ApiAddOn[]>(initialAddOns);
+  const [distanceRules, setDistanceRules] = useState<ApiDistanceRule[]>(initialDistanceRules);
   const [activeTab, setActiveTab] = useState<PricingTab>("vehicle_rates");
 
   const [isLoading, setIsLoading] = useState<boolean>(true);
@@ -73,11 +74,15 @@ export function PricingProvider({ children }: { children: React.ReactNode }) {
     "idle"
   );
   const [saveMessage, setSaveMessage] = useState<string | null>(null);
+  const hasFetchedRef = useRef(false);
 
-  const refreshPricingData = useCallback(async () => {
+  const refreshPricingData = useCallback(async (forceFresh?: boolean) => {
     setIsLoading(true);
+    if (forceFresh) {
+      invalidateApiCache();
+    }
     try {
-      // 1. Fetch live vehicles & rates
+      // 1. Fetch live vehicles & rates (deduplicated by client)
       try {
         const vRes = await getVehicles();
         if (vRes && vRes.data && vRes.data.length > 0) {
@@ -115,7 +120,7 @@ export function PricingProvider({ children }: { children: React.ReactNode }) {
         console.warn("Could not load vehicles for pricing rates:", err);
       }
 
-      // 2. Fetch add-ons
+      // 2. Fetch add-ons (deduplicated by client)
       try {
         const aRes = await getAddOns();
         if (aRes && aRes.data) {
@@ -125,7 +130,7 @@ export function PricingProvider({ children }: { children: React.ReactNode }) {
         console.warn("Could not load add-ons:", err);
       }
 
-      // 3. Fetch distance rules
+      // 3. Fetch distance rules (deduplicated by client)
       try {
         const dRes = await getDistanceRules();
         if (dRes && dRes.data) {
@@ -140,7 +145,10 @@ export function PricingProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   useEffect(() => {
-    refreshPricingData();
+    if (!hasFetchedRef.current) {
+      hasFetchedRef.current = true;
+      refreshPricingData();
+    }
   }, [refreshPricingData]);
 
   const updateRate = (
@@ -195,6 +203,7 @@ export function PricingProvider({ children }: { children: React.ReactNode }) {
     }
 
     if (failCount === 0) {
+      invalidateApiCache();
       setSaveStatus("saved");
       setSaveMessage("All pricing rates updated successfully in database!");
       setTimeout(() => setSaveStatus("idle"), 3000);
@@ -211,6 +220,8 @@ export function PricingProvider({ children }: { children: React.ReactNode }) {
 
   const resetToDefaults = () => {
     setRates(initialPricingRates);
+    setAddOns(initialAddOns);
+    setDistanceRules(initialDistanceRules);
   };
 
   const updateAddOnItem = async (

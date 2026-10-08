@@ -1,6 +1,6 @@
 "use client";
 
-import React, { createContext, useContext, useState, useEffect, useMemo, useCallback } from "react";
+import React, { createContext, useContext, useState, useEffect, useMemo, useCallback, useRef } from "react";
 import { Vehicle, VehicleStatus } from "@/types/fleet";
 import { initialFleet } from "@/data/initialFleet";
 import { getVehicles, createVehicle as apiCreateVehicle, updateVehicle as apiUpdateVehicle, setVehicleServiceRate } from "@/lib/api/services";
@@ -97,6 +97,7 @@ export function FleetProvider({ children }: { children: React.ReactNode }) {
 
   const [isAddVehicleModalOpen, setIsAddVehicleModalOpen] = useState(false);
   const [editingVehicle, setEditingVehicle] = useState<Vehicle | null>(null);
+  const hasFetchedRef = useRef(false);
 
   const refreshVehicles = useCallback(async () => {
     try {
@@ -116,7 +117,10 @@ export function FleetProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   useEffect(() => {
-    refreshVehicles();
+    if (!hasFetchedRef.current) {
+      hasFetchedRef.current = true;
+      refreshVehicles();
+    }
   }, [refreshVehicles]);
 
   const openAddVehicleModal = () => setIsAddVehicleModalOpen(true);
