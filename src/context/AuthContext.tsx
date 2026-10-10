@@ -3,6 +3,8 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { useRouter, usePathname } from "next/navigation";
 
+import { API_CONFIG } from "@/config/api";
+
 export interface User {
   name: string;
   email: string;
@@ -34,7 +36,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const login = async (username: string, pass: string): Promise<boolean> => {
     if (username && pass) {
       try {
-        const response = await fetch("http://localhost:3000/api/v1/admin/login", {
+        const response = await fetch(`${API_CONFIG.BASE_URL}/api/v1/admin/login`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
