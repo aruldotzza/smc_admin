@@ -3,6 +3,7 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { useRouter, usePathname } from "next/navigation";
 
+import Cookies from "js-cookie";
 import { adminLogin } from "@/lib/api/services";
 
 export interface User {
@@ -19,19 +20,29 @@ interface AuthContextType {
   logout: () => void;
 }
 
-const defaultUser: User = {
-  name: "Owner",
-  email: "owner@singaporemaxicabs.com.sg",
-  role: "owner",
-  initials: "OW",
-};
+// Removed default user to ensure proper auth flow
+// We will only have a user if they actually log in.
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = useState<User | null>(defaultUser);
+  const [user, setUser] = useState<User | null>(null);
   const router = useRouter();
   const pathname = usePathname();
+
+  useEffect(() => {
+    // If we have a token but no user object, we can construct a placeholder user
+    // or fetch the user from a /me endpoint. For now, we'll restore a placeholder.
+    const token = Cookies.get("accessToken");
+    if (token && !user) {
+      setUser({
+        name: "Admin",
+        email: "admin@singaporemaxicabs.com.sg",
+        role: "admin",
+        initials: "AD",
+      });
+    }
+  }, []);
 
   const login = async (username: string, pass: string): Promise<boolean> => {
     if (username && pass) {
@@ -41,14 +52,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           password: pass,
         });
 
-        if (data) {
-          // Assuming successful login based on response or lack of error
-          // You may want to parse token and user details from `data` in the future.
+        if (data && (data.token || data.accessToken || data.access_token)) {
+          const tokenToStore = data.token || data.accessToken || data.access_token;
+          
+          if (tokenToStore) {
+            Cookies.set("accessToken", tokenToStore, { expires: 1 });
+          }
+
           const loggedUser: User = {
-            name: username,
-            email: `${username}@singaporemaxicabs.com.sg`,
-            role: "admin",
-            initials: username.substring(0, 2).toUpperCase(),
+            name: data.user?.username || username,
+            email: data.user?.email || `${username}@singaporemaxicabs.com.sg`,
+            role: (data.user?.role as any) || "admin",
+            initials: (data.user?.username || username).substring(0, 2).toUpperCase(),
           };
           setUser(loggedUser);
           router.push("/");
@@ -65,6 +80,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const logout = () => {
+    Cookies.remove("accessToken");
     setUser(null);
     router.push("/login");
   };

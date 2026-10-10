@@ -133,8 +133,26 @@ export async function apiRequest<T>(
     }
 
     // Admin authentication header
-    if (requiresAuth && API_CONFIG.ADMIN_API_KEY) {
-      headers["Authorization"] = `Bearer ${API_CONFIG.ADMIN_API_KEY}`;
+    if (requiresAuth) {
+      let token = "";
+      if (typeof window !== "undefined") {
+        const Cookies = require("js-cookie");
+        token = Cookies.default ? Cookies.default.get("accessToken") : Cookies.get("accessToken");
+      } else {
+        try {
+          const { cookies } = await import("next/headers");
+          const cookieStore = await cookies();
+          token = cookieStore.get("accessToken")?.value || "";
+        } catch (e) {
+          // Ignore if called outside of request context
+        }
+      }
+
+      if (token) {
+        headers["Authorization"] = `Bearer ${token}`;
+      } else if (API_CONFIG.ADMIN_API_KEY) {
+        headers["Authorization"] = `Bearer ${API_CONFIG.ADMIN_API_KEY}`;
+      }
     }
 
     // Idempotency key if supplied
