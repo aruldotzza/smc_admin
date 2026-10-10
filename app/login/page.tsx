@@ -6,23 +6,23 @@ import { useAuth } from "@/context/AuthContext";
 
 export default function LoginPage() {
   const { login } = useAuth();
-  const [email, setEmail] = useState("owner@singaporemaxicabs.com.sg");
-  const [password, setPassword] = useState("Admin@2026");
+  const [username, setUsername] = useState("admin");
+  const [password, setPassword] = useState("AdminSMVishnu@69");
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
-    const success = login(email, password);
+    const success = await login(username, password);
     if (!success) {
       setError("Please enter valid admin credentials.");
     }
   };
 
   const handleUseDemo = () => {
-    setEmail("owner@singaporemaxicabs.com.sg");
-    setPassword("Admin@2026");
+    setUsername("admin");
+    setPassword("AdminSMVishnu@69");
   };
 
   return (
@@ -142,19 +142,19 @@ export default function LoginPage() {
 
           {/* Form */}
           <form onSubmit={handleSubmit} className="w-full pt-8 flex flex-col justify-start items-start gap-5">
-            {/* Email */}
+            {/* Username */}
             <div className="self-stretch flex flex-col justify-start items-start gap-1.5">
               <label className="justify-start text-color-text-primary text-xs font-semibold font-['Manrope'] leading-5">
-                Email address
+                Username
               </label>
               <div className="w-full px-4 py-3 bg-color-background-white rounded-xl outline outline-1 outline-offset-[-1px] outline-color-border-subtle flex justify-start items-center gap-3 focus-within:outline-color-border-focus focus-within:ring-1 focus-within:ring-amber-500">
                 <Mail className="size-4 text-gray-500 flex-shrink-0" />
                 <input
-                  type="email"
+                  type="text"
                   required
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="owner@singaporemaxicabs.com.sg"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                  placeholder="admin"
                   className="flex-1 text-color-text-primary text-sm font-normal font-['Manrope'] outline-none bg-transparent"
                 />
               </div>
@@ -217,10 +217,10 @@ export default function LoginPage() {
               <div className="self-stretch pt-2 flex flex-col justify-start items-start gap-1">
                 <div className="self-stretch flex justify-between items-center text-xs">
                   <span className="text-color-input-placeholder font-normal font-['Manrope'] leading-4">
-                    Email
+                    Username
                   </span>
                   <span className="text-color-text-primary font-medium font-['Manrope'] leading-4">
-                    owner@singaporemaxicabs.com.sg
+                    admin
                   </span>
                 </div>
                 <div className="self-stretch flex justify-between items-center text-xs">
@@ -228,7 +228,7 @@ export default function LoginPage() {
                     Password
                   </span>
                   <span className="text-color-text-primary font-medium font-['Manrope'] leading-4">
-                    Admin@2026
+                    AdminSMVishnu@69
                   </span>
                 </div>
               </div>

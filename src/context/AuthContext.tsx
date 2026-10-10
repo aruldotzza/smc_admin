@@ -13,7 +13,7 @@ export interface User {
 interface AuthContextType {
   user: User | null;
   isAuthenticated: boolean;
-  login: (email: string, password: string) => boolean;
+  login: (username: string, password: string) => Promise<boolean>;
   logout: () => void;
 }
 
@@ -31,17 +31,40 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
 
-  const login = (email: string, pass: string): boolean => {
-    if (email && pass) {
-      const loggedUser: User = {
-        name: email.includes("owner") ? "Owner" : "Admin Staff",
-        email: email,
-        role: "owner",
-        initials: email.includes("owner") ? "OW" : "AD",
-      };
-      setUser(loggedUser);
-      router.push("/");
-      return true;
+  const login = async (username: string, pass: string): Promise<boolean> => {
+    if (username && pass) {
+      try {
+        const response = await fetch("http://localhost:3000/api/v1/admin/login", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            username: username,
+            password: pass,
+          }),
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          // Assuming successful login for now. 
+          // You may want to parse token and user details from `data` in the future.
+          const loggedUser: User = {
+            name: username,
+            email: `${username}@singaporemaxicabs.com.sg`,
+            role: "admin",
+            initials: username.substring(0, 2).toUpperCase(),
+          };
+          setUser(loggedUser);
+          router.push("/");
+          return true;
+        } else {
+          return false;
+        }
+      } catch (error) {
+        console.error("Login API error:", error);
+        return false;
+      }
     }
     return false;
   };
