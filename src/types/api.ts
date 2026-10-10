@@ -233,6 +233,24 @@ export interface CheckoutResponse {
 // 5. Admin Management Payloads
 // ==========================================
 
+export interface AdminLoginPayload {
+  username?: string;
+  password?: string;
+  email?: string;
+}
+
+export interface AdminLoginResponse {
+  success?: boolean;
+  token?: string;
+  user?: {
+    id?: number;
+    username?: string;
+    email?: string;
+    role?: string;
+  };
+  [key: string]: any;
+}
+
 export interface AdminCreateVehiclePayload {
   name: string;
   description?: string;

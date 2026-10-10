@@ -25,6 +25,8 @@ import {
   SingleDistanceRuleResponse,
   AdminCreateDistanceRulePayload,
   AdminUpdateDistanceRulePayload,
+  AdminLoginPayload,
+  AdminLoginResponse,
   HealthResponse,
   ReadyResponse,
   ApiService,
@@ -400,5 +402,23 @@ export async function getHealth(): Promise<HealthResponse> {
 export async function getReadiness(): Promise<ReadyResponse> {
   return apiRequest<ReadyResponse>(API_CONFIG.ENDPOINTS.READY, {
     method: "GET",
+  });
+}
+
+// ==========================================
+// 25. Auth & Login
+// ==========================================
+
+/**
+ * Admin Login
+ * POST /api/v1/admin/login
+ */
+export async function adminLogin(
+  payload: AdminLoginPayload
+): Promise<AdminLoginResponse> {
+  return apiRequest<AdminLoginResponse>(API_CONFIG.ENDPOINTS.ADMIN_LOGIN, {
+    method: "POST",
+    body: JSON.stringify(payload),
+    // we don't pass requiresAuth: true because login itself doesn't need the admin key
   });
 }

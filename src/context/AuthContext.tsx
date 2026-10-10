@@ -3,7 +3,7 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { useRouter, usePathname } from "next/navigation";
 
-import { API_CONFIG } from "@/config/api";
+import { adminLogin } from "@/lib/api/services";
 
 export interface User {
   name: string;
@@ -36,20 +36,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const login = async (username: string, pass: string): Promise<boolean> => {
     if (username && pass) {
       try {
-        const response = await fetch(`${API_CONFIG.BASE_URL}/api/v1/admin/login`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            username: username,
-            password: pass,
-          }),
+        const data = await adminLogin({
+          username: username,
+          password: pass,
         });
 
-        if (response.ok) {
-          const data = await response.json();
-          // Assuming successful login for now. 
+        if (data) {
+          // Assuming successful login based on response or lack of error
           // You may want to parse token and user details from `data` in the future.
           const loggedUser: User = {
             name: username,

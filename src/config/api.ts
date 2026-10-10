@@ -63,5 +63,8 @@ export const API_CONFIG = {
     HEALTH: "/health",
     READY: "/ready",
     STRIPE_WEBHOOK: "/api/payments/stripe/webhook",
+
+    // Admin Auth
+    ADMIN_LOGIN: "/api/v1/admin/login",
   },
 };
