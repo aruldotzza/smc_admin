@@ -32,19 +32,60 @@ export default function FleetCard({ vehicle }: FleetCardProps) {
   return (
     <div className="bg-color-background-white rounded-xl outline outline-1 outline-offset-[-1px] outline-color-border-subtle flex flex-col justify-start items-start overflow-hidden font-['Manrope']">
       {/* Top Banner Image */}
-      <div className="self-stretch h-36 relative bg-color-background-brand overflow-hidden">
-        <div className="w-full h-36 left-0 top-0 absolute bg-gradient-to-r from-slate-900/90 via-slate-800/80 to-slate-900/90" />
-        <div className="w-full px-3 py-2.5 left-0 top-0 absolute inline-flex justify-between items-start">
-          <div className="px-2 py-0.5 bg-slate-900/70 rounded-md inline-flex flex-col justify-start items-start">
+      <div className="self-stretch h-40 relative bg-slate-900 overflow-hidden flex items-center justify-center group">
+        {vehicle.imageUrl ? (
+          <img
+            src={vehicle.imageUrl}
+            alt={vehicle.name}
+            className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+            onError={(e) => {
+              (e.currentTarget as HTMLElement).style.display = "none";
+              const fallback = e.currentTarget.parentElement?.querySelector(".img-fallback");
+              if (fallback) (fallback as HTMLElement).style.display = "flex";
+            }}
+          />
+        ) : null}
+
+        {/* Fallback silhouette if no image or error */}
+        <div
+          className={`img-fallback w-full h-full ${
+            vehicle.imageUrl ? "hidden" : "flex"
+          } flex-col items-center justify-center bg-gradient-to-br from-slate-900 via-slate-800 to-slate-950 p-4 text-center`}
+        >
+          <div className="size-12 rounded-full bg-slate-800/80 flex items-center justify-center mb-1 text-slate-400">
+            <svg
+              className="size-6 text-amber-400/80"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={1.5}
+                d="M8 17h8M8 17a2 2 0 11-4 0 2 2 0 014 0zm8 0a2 2 0 104 0 2 2 0 00-4 0zM3 13h18M5 17h14a2 2 0 002-2V9a2 2 0 00-2-2h-3l-2-3H10L8 7H5a2 2 0 00-2 2v6a2 2 0 002 2z"
+              />
+            </svg>
+          </div>
+          <span className="text-[11px] text-slate-400 font-medium tracking-wide">
+            No Photo Uploaded
+          </span>
+        </div>
+
+        {/* Gradient vignette */}
+        <div className="w-full h-full left-0 top-0 absolute bg-gradient-to-t from-slate-950/80 via-transparent to-slate-950/40 pointer-events-none" />
+
+        <div className="w-full px-3 py-2.5 left-0 top-0 absolute inline-flex justify-between items-start z-10 pointer-events-none">
+          <div className="px-2 py-0.5 bg-slate-900/80 backdrop-blur-sm rounded-md inline-flex flex-col justify-start items-start border border-white/10">
             <div className="justify-start text-color-text-inverse text-xs font-bold font-['Manrope'] leading-4 tracking-wide">
               {vehicle.fleetNumber || "SMC-001"}
             </div>
           </div>
           <div
-            className={`px-2 py-0.5 rounded-full outline outline-1 outline-offset-[-1px] inline-flex flex-col justify-start items-start ${
+            className={`px-2 py-0.5 rounded-full outline outline-1 outline-offset-[-1px] backdrop-blur-sm inline-flex flex-col justify-start items-start ${
               vehicle.status === "active"
-                ? "bg-green-100 outline-green-200 text-green-700"
-                : "bg-stone-100 outline-color-border-subtle text-color-input-placeholder"
+                ? "bg-green-500/20 outline-green-400/30 text-green-300"
+                : "bg-stone-500/20 outline-stone-400/30 text-stone-300"
             }`}
           >
             <div className="justify-start text-[10px] font-semibold font-['Manrope'] leading-4">

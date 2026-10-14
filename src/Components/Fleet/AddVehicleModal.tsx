@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import { useFleet } from "@/context/FleetContext";
 import { VehicleStatus } from "@/types/fleet";
 
@@ -12,6 +12,10 @@ export default function AddVehicleModal() {
   const [name, setName] = useState("");
   const [model, setModel] = useState("");
   const [imagePath, setImagePath] = useState("/assets/2edae.png");
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [imagePreviewUrl, setImagePreviewUrl] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
   const [driverName, setDriverName] = useState("");
   const [driverPhone, setDriverPhone] = useState("+65 ");
   const [paxCapacity, setPaxCapacity] = useState(6);
@@ -25,6 +29,14 @@ export default function AddVehicleModal() {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   if (!isAddVehicleModalOpen) return null;
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setSelectedFile(file);
+      setImagePreviewUrl(URL.createObjectURL(file));
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -49,7 +61,8 @@ export default function AddVehicleModal() {
         driverPhone: driverPhone || "+65 9000 0000",
         status: (isActive ? "active" : "inactive") as VehicleStatus,
         features: ["Luggage Space", "Air Conditioning", "Executive Seating"],
-      });
+        imageFile: selectedFile,
+      } as any);
     } finally {
       setIsSubmitting(false);
       closeAddVehicleModal();
@@ -134,17 +147,69 @@ export default function AddVehicleModal() {
                 />
               </div>
 
-              <div className="self-stretch flex flex-col justify-start items-start gap-1">
+              {/* Vehicle Photo Selection */}
+              <div className="self-stretch flex flex-col justify-start items-start gap-2 pt-1">
                 <div className="justify-start text-color-input-placeholder text-xs font-semibold font-['Manrope'] uppercase leading-4 tracking-wide">
-                  Image Path
+                  Vehicle Photo (Optional)
                 </div>
-                <input
-                  type="text"
-                  value={imagePath}
-                  onChange={(e) => setImagePath(e.target.value)}
-                  placeholder="/assets/2edae.png"
-                  className="self-stretch h-10 px-3 py-2.5 bg-stone-100 rounded-lg outline outline-1 outline-offset-[-1px] outline-color-border-subtle text-xs text-color-text-primary font-normal font-['Manrope'] focus:outline-none"
-                />
+
+                <div className="self-stretch h-32 bg-slate-900 rounded-xl overflow-hidden relative border border-slate-200 flex items-center justify-center">
+                  {imagePreviewUrl ? (
+                    <img
+                      src={imagePreviewUrl}
+                      alt="Vehicle Preview"
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <div className="flex flex-col items-center justify-center text-slate-400 p-3 text-center">
+                      <svg className="size-7 text-amber-400/80 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                      </svg>
+                      <span className="text-xs font-medium text-slate-300">Choose vehicle photo</span>
+                      <span className="text-[10px] text-slate-500">PNG, JPG, WEBP up to 5MB</span>
+                    </div>
+                  )}
+
+                  {selectedFile && (
+                    <div className="absolute bottom-2 left-2 bg-amber-500 text-slate-950 font-bold text-[10px] px-2 py-0.5 rounded shadow">
+                      {selectedFile.name}
+                    </div>
+                  )}
+                </div>
+
+                <div className="self-stretch flex items-center gap-2">
+                  <input
+                    type="file"
+                    ref={fileInputRef}
+                    onChange={handleFileChange}
+                    accept="image/png, image/jpeg, image/webp"
+                    className="hidden"
+                  />
+
+                  <button
+                    type="button"
+                    onClick={() => fileInputRef.current?.click()}
+                    className="flex-1 h-9 px-3 bg-stone-100 hover:bg-stone-200 text-slate-700 text-xs font-semibold rounded-lg border border-stone-300 transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
+                  >
+                    <svg className="size-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+                    </svg>
+                    {selectedFile ? "Change Selection" : "Select Photo File"}
+                  </button>
+
+                  {selectedFile && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setSelectedFile(null);
+                        setImagePreviewUrl(null);
+                      }}
+                      className="h-9 px-3 bg-stone-100 hover:bg-stone-200 text-slate-600 text-xs font-semibold rounded-lg border border-stone-300 transition-colors flex items-center justify-center cursor-pointer"
+                    >
+                      Clear
+                    </button>
+                  )}
+                </div>
               </div>
             </div>
           </div>

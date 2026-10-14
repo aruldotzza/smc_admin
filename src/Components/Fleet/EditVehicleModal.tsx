@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useFleet } from "@/context/FleetContext";
 import { VehicleStatus } from "@/types/fleet";
 
@@ -10,12 +10,22 @@ export default function EditVehicleModal() {
     editingVehicle,
     closeEditVehicleModal,
     updateVehicle,
+    uploadVehicleImage,
+    deleteVehicleImage,
   } = useFleet();
 
   const [fleetNumber, setFleetNumber] = useState("");
   const [name, setName] = useState("");
   const [model, setModel] = useState("");
   const [imagePath, setImagePath] = useState("/assets/2edae.png");
+  const [currentImageUrl, setCurrentImageUrl] = useState<string | undefined>(undefined);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [imagePreviewUrl, setImagePreviewUrl] = useState<string | null>(null);
+  const [isUploadingImage, setIsUploadingImage] = useState(false);
+  const [isDeletingImage, setIsDeletingImage] = useState(false);
+  const [imageMessage, setImageMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
   const [driverName, setDriverName] = useState("");
   const [driverPhone, setDriverPhone] = useState("");
   const [paxCapacity, setPaxCapacity] = useState(6);
@@ -32,6 +42,10 @@ export default function EditVehicleModal() {
       setName(editingVehicle.name);
       setModel(editingVehicle.model);
       setImagePath(editingVehicle.imagePath || "/assets/2edae.png");
+      setCurrentImageUrl(editingVehicle.imageUrl);
+      setSelectedFile(null);
+      setImagePreviewUrl(null);
+      setImageMessage(null);
       setDriverName(editingVehicle.driverName);
       setDriverPhone(editingVehicle.driverPhone);
       setPaxCapacity(editingVehicle.paxCapacity);
@@ -48,11 +62,68 @@ export default function EditVehicleModal() {
 
   if (!isEditVehicleModalOpen || !editingVehicle) return null;
 
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (file.size > 5 * 1024 * 1024) {
+        setImageMessage({ type: "error", text: "Image size must be under 5MB" });
+        return;
+      }
+      setSelectedFile(file);
+      setImagePreviewUrl(URL.createObjectURL(file));
+      setImageMessage(null);
+    }
+  };
+
+  const handleUploadImageNow = async () => {
+    if (!selectedFile || !editingVehicle) return;
+    try {
+      setIsUploadingImage(true);
+      setImageMessage(null);
+      const res = await uploadVehicleImage(editingVehicle.id, selectedFile);
+      setImageMessage({ type: "success", text: "Photo uploaded successfully!" });
+      if (res.imageUrl) setCurrentImageUrl(res.imageUrl);
+      setSelectedFile(null);
+      setImagePreviewUrl(null);
+    } catch (err: any) {
+      setImageMessage({ type: "error", text: err?.message || "Failed to upload photo" });
+    } finally {
+      setIsUploadingImage(false);
+    }
+  };
+
+  const handleDeleteImageNow = async () => {
+    if (!editingVehicle) return;
+    if (!window.confirm("Are you sure you want to delete this vehicle photo?")) return;
+    try {
+      setIsDeletingImage(true);
+      setImageMessage(null);
+      await deleteVehicleImage(editingVehicle.id);
+      setImageMessage({ type: "success", text: "Photo deleted successfully" });
+      setCurrentImageUrl(undefined);
+      setSelectedFile(null);
+      setImagePreviewUrl(null);
+    } catch (err: any) {
+      setImageMessage({ type: "error", text: err?.message || "Failed to delete photo" });
+    } finally {
+      setIsDeletingImage(false);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     try {
       setIsSubmitting(true);
+      // Auto-upload selected file if user didn't hit Upload Now separately
+      if (selectedFile) {
+        try {
+          await uploadVehicleImage(editingVehicle.id, selectedFile);
+        } catch (uploadErr) {
+          console.warn("Image upload during save error:", uploadErr);
+        }
+      }
+
       await updateVehicle(editingVehicle.id, {
         fleetNumber,
         name,
@@ -147,16 +218,103 @@ export default function EditVehicleModal() {
                 />
               </div>
 
-              <div className="self-stretch flex flex-col justify-start items-start gap-1">
-                <div className="justify-start text-color-input-placeholder text-xs font-semibold font-['Manrope'] uppercase leading-4 tracking-wide">
-                  Image Path
+              {/* Vehicle Photo Management */}
+              <div className="self-stretch flex flex-col justify-start items-start gap-2 pt-1">
+                <div className="self-stretch flex justify-between items-center">
+                  <div className="justify-start text-color-input-placeholder text-xs font-semibold font-['Manrope'] uppercase leading-4 tracking-wide">
+                    Vehicle Photo
+                  </div>
+                  {currentImageUrl && (
+                    <span className="text-[10px] font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
+                      Photo Uploaded
+                    </span>
+                  )}
                 </div>
-                <input
-                  type="text"
-                  value={imagePath}
-                  onChange={(e) => setImagePath(e.target.value)}
-                  className="self-stretch h-10 px-3 py-2.5 bg-stone-100 rounded-lg outline outline-1 outline-offset-[-1px] outline-color-border-subtle text-xs text-color-text-primary font-normal font-['Manrope'] focus:outline-none"
-                />
+
+                {/* Preview Box */}
+                <div className="self-stretch h-36 bg-slate-900 rounded-xl overflow-hidden relative border border-slate-200 flex items-center justify-center">
+                  {imagePreviewUrl || currentImageUrl ? (
+                    <img
+                      src={imagePreviewUrl || currentImageUrl}
+                      alt="Vehicle Preview"
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <div className="flex flex-col items-center justify-center text-slate-400 p-4 text-center">
+                      <svg className="size-8 text-amber-400/80 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                      </svg>
+                      <span className="text-xs font-medium text-slate-300">No photo uploaded</span>
+                      <span className="text-[10px] text-slate-500">PNG, JPG, WEBP up to 5MB</span>
+                    </div>
+                  )}
+
+                  {selectedFile && (
+                    <div className="absolute bottom-2 left-2 bg-amber-500 text-slate-950 font-bold text-[10px] px-2 py-0.5 rounded shadow">
+                      New Photo Selected
+                    </div>
+                  )}
+                </div>
+
+                {/* File actions */}
+                <div className="self-stretch flex items-center gap-2">
+                  <input
+                    type="file"
+                    ref={fileInputRef}
+                    onChange={handleFileChange}
+                    accept="image/png, image/jpeg, image/webp"
+                    className="hidden"
+                  />
+
+                  <button
+                    type="button"
+                    onClick={() => fileInputRef.current?.click()}
+                    className="flex-1 h-9 px-3 bg-stone-100 hover:bg-stone-200 text-slate-700 text-xs font-semibold rounded-lg border border-stone-300 transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
+                  >
+                    <svg className="size-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+                    </svg>
+                    {selectedFile ? "Change Selection" : "Select Photo"}
+                  </button>
+
+                  {selectedFile && (
+                    <button
+                      type="button"
+                      disabled={isUploadingImage}
+                      onClick={handleUploadImageNow}
+                      className="h-9 px-3 bg-color-background-brand hover:opacity-90 text-color-text-inverse text-xs font-semibold rounded-lg transition-opacity flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50"
+                    >
+                      {isUploadingImage ? "Uploading..." : "Upload Now"}
+                    </button>
+                  )}
+
+                  {currentImageUrl && !selectedFile && (
+                    <button
+                      type="button"
+                      disabled={isDeletingImage}
+                      onClick={handleDeleteImageNow}
+                      className="h-9 px-3 bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 text-xs font-semibold rounded-lg transition-colors flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50"
+                      title="Delete current photo"
+                    >
+                      <svg className="size-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                      </svg>
+                      {isDeletingImage ? "Deleting..." : "Delete Photo"}
+                    </button>
+                  )}
+                </div>
+
+                {imageMessage && (
+                  <div
+                    className={`self-stretch text-xs px-3 py-1.5 rounded-lg ${
+                      imageMessage.type === "success"
+                        ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
+                        : "bg-red-50 text-red-700 border border-red-200"
+                    }`}
+                  >
+                    {imageMessage.text}
+                  </div>
+                )}
               </div>
             </div>
           </div>

@@ -29,16 +29,33 @@ async function handleProxy(
       if (val) headers.set(header, val);
     });
 
-    // Provide default Admin token if not explicitly provided and an admin secret is configured
-    if (!headers.has("authorization") && API_CONFIG.ADMIN_API_KEY) {
-      headers.set("authorization", `Bearer ${API_CONFIG.ADMIN_API_KEY}`);
+    // Check Authorization header, or fallback to accessToken cookie, or ADMIN_API_KEY
+    if (!headers.has("authorization")) {
+      const cookieToken = request.cookies.get("accessToken")?.value;
+      if (cookieToken) {
+        headers.set("authorization", `Bearer ${cookieToken}`);
+      } else if (API_CONFIG.ADMIN_API_KEY) {
+        headers.set("authorization", `Bearer ${API_CONFIG.ADMIN_API_KEY}`);
+      }
     }
 
-    let body: string | undefined = undefined;
+    let body: BodyInit | undefined = undefined;
     if (["POST", "PUT", "PATCH", "DELETE"].includes(request.method)) {
       try {
-        const text = await request.text();
-        if (text) body = text;
+        const reqContentType = request.headers.get("content-type") || "";
+        if (
+          reqContentType.includes("multipart/form-data") ||
+          reqContentType.includes("image/") ||
+          reqContentType.includes("application/octet-stream")
+        ) {
+          const buffer = await request.arrayBuffer();
+          if (buffer.byteLength > 0) {
+            body = Buffer.from(buffer);
+          }
+        } else {
+          const text = await request.text();
+          if (text) body = text;
+        }
       } catch {
         // No body provided
       }

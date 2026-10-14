@@ -5,6 +5,50 @@ export interface RequestOptions extends RequestInit {
   requiresAuth?: boolean;
   idempotencyKey?: string;
   forceRefresh?: boolean;
+  _isRetry?: boolean;
+}
+
+let refreshPromise: Promise<string | null> | null = null;
+
+async function executeRefreshToken(): Promise<string | null> {
+  if (typeof window === "undefined") return null;
+  const Cookies = require("js-cookie");
+  const cookieLib = Cookies.default || Cookies;
+  const refreshToken = cookieLib.get("refreshToken");
+  if (!refreshToken) return null;
+
+  try {
+    const res = await fetch(`${API_CONFIG.PROXY_PREFIX}${API_CONFIG.ENDPOINTS.ADMIN_REFRESH}`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json",
+      },
+      body: JSON.stringify({ refresh_token: refreshToken }),
+    });
+
+    if (!res.ok) {
+      cookieLib.remove("accessToken");
+      cookieLib.remove("refreshToken");
+      return null;
+    }
+
+    const data = await res.json();
+    const newAccessToken = data.token || data.accessToken || data.access_token;
+    if (newAccessToken) {
+      cookieLib.set("accessToken", newAccessToken, { expires: 1 });
+      const newRefreshToken = data.refreshToken || data.refresh_token;
+      if (newRefreshToken) {
+        cookieLib.set("refreshToken", newRefreshToken, { expires: 7 });
+      }
+      return newAccessToken;
+    }
+  } catch (e) {
+    console.error("Auto-refresh token failed:", e);
+    cookieLib.remove("accessToken");
+    cookieLib.remove("refreshToken");
+  }
+  return null;
 }
 
 export class ApiClientError extends Error {
@@ -123,13 +167,18 @@ export async function apiRequest<T>(
       ...(customHeaders as Record<string, string>),
     };
 
-    // Set JSON Content-Type for mutation methods if body is present
+    // Set JSON Content-Type for mutation methods if body is present as string
     if (
       customOptions.body &&
       typeof customOptions.body === "string" &&
       !headers["Content-Type"]
     ) {
       headers["Content-Type"] = "application/json";
+    }
+
+    // Never set Content-Type for FormData; browser/fetch calculates the multipart boundary
+    if (typeof FormData !== "undefined" && customOptions.body instanceof FormData) {
+      delete headers["Content-Type"];
     }
 
     // Admin authentication header
@@ -172,6 +221,27 @@ export async function apiRequest<T>(
       });
 
       clearTimeout(timeoutId);
+
+      // Handle 401 Unauthorized: Attempt token refresh and retry
+      if (
+        response.status === 401 &&
+        !options._isRetry &&
+        cleanEndpoint !== API_CONFIG.ENDPOINTS.ADMIN_LOGIN &&
+        cleanEndpoint !== API_CONFIG.ENDPOINTS.ADMIN_REFRESH
+      ) {
+        if (!refreshPromise) {
+          refreshPromise = executeRefreshToken().finally(() => {
+            refreshPromise = null;
+          });
+        }
+        const newToken = await refreshPromise;
+        if (newToken) {
+          return apiRequest<T>(endpoint, {
+            ...options,
+            _isRetry: true,
+          });
+        }
+      }
 
       const contentType = response.headers.get("content-type") || "";
       const isJson = contentType.includes("application/json");

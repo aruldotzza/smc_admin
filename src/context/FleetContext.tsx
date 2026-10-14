@@ -3,8 +3,16 @@
 import React, { createContext, useContext, useState, useEffect, useMemo, useCallback, useRef } from "react";
 import { Vehicle, VehicleStatus } from "@/types/fleet";
 import { initialFleet } from "@/data/initialFleet";
-import { getVehicles, createVehicle as apiCreateVehicle, updateVehicle as apiUpdateVehicle, setVehicleServiceRate } from "@/lib/api/services";
+import {
+  getVehicles,
+  createVehicle as apiCreateVehicle,
+  updateVehicle as apiUpdateVehicle,
+  setVehicleServiceRate,
+  uploadVehicleImage as apiUploadVehicleImage,
+  deleteVehicleImage as apiDeleteVehicleImage,
+} from "@/lib/api/services";
 import { ApiVehicle } from "@/types/api";
+import { API_CONFIG } from "@/config/api";
 
 interface FleetContextType {
   vehicles: Vehicle[];
@@ -20,6 +28,8 @@ interface FleetContextType {
   closeEditVehicleModal: () => void;
   addVehicle: (data: Partial<Vehicle>) => Promise<void>;
   updateVehicle: (id: string, updates: Partial<Vehicle>) => Promise<void>;
+  uploadVehicleImage: (id: string | number, file: File | Blob) => Promise<{ success: boolean; imageUrl?: string }>;
+  deleteVehicleImage: (id: string | number) => Promise<{ success: boolean }>;
   toggleVehicleStatus: (id: string) => Promise<void>;
   deleteVehicle: (id: string) => void;
   activeVehiclesCount: number;
@@ -83,7 +93,11 @@ function mapApiToVehicle(v: ApiVehicle, index: number): Vehicle {
     driverName: driver.name,
     driverPhone: driver.phone,
     features: ["Air Conditioning", "Executive Seating", "Luggage Space"],
-    imageUrl: v.imageUrl || undefined,
+    imageUrl: v.imageUrl
+      ? v.imageUrl.startsWith("http")
+        ? v.imageUrl
+        : `${API_CONFIG.BASE_URL}${v.imageUrl.startsWith("/") ? "" : "/"}${v.imageUrl}`
+      : undefined,
     imagePath: "/assets/2edae.png",
     lastServiceDate: "2026-10-01",
     prices: v.prices,
@@ -154,6 +168,13 @@ export function FleetProvider({ children }: { children: React.ReactNode }) {
         });
 
         if (created?.vehicle) {
+          if ((data as any).imageFile) {
+            try {
+              await apiUploadVehicleImage(created.vehicle.id, (data as any).imageFile);
+            } catch (imgErr) {
+              console.warn("Failed to upload image for created vehicle:", imgErr);
+            }
+          }
           await refreshVehicles();
           closeAddVehicleModal();
           return;
@@ -259,6 +280,26 @@ export function FleetProvider({ children }: { children: React.ReactNode }) {
     );
   };
 
+  const uploadVehicleImage = async (id: string | number, file: File | Blob) => {
+    const target = vehicles.find((v) => v.id === String(id));
+    const numId = target?.apiId || (!isNaN(Number(id)) ? Number(id) : null);
+    if (!numId) throw new Error("Invalid vehicle ID for image upload");
+
+    const res = await apiUploadVehicleImage(numId, file);
+    await refreshVehicles();
+    return { success: true, imageUrl: res.imageUrl || res.image_url };
+  };
+
+  const deleteVehicleImage = async (id: string | number) => {
+    const target = vehicles.find((v) => v.id === String(id));
+    const numId = target?.apiId || (!isNaN(Number(id)) ? Number(id) : null);
+    if (!numId) throw new Error("Invalid vehicle ID for image deletion");
+
+    await apiDeleteVehicleImage(numId);
+    await refreshVehicles();
+    return { success: true };
+  };
+
   const deleteVehicle = (id: string) => {
     setVehicles((prev) => prev.filter((v) => v.id !== id));
   };
@@ -283,6 +324,8 @@ export function FleetProvider({ children }: { children: React.ReactNode }) {
         closeEditVehicleModal,
         addVehicle,
         updateVehicle,
+        uploadVehicleImage,
+        deleteVehicleImage,
         toggleVehicleStatus,
         deleteVehicle,
         activeVehiclesCount,

@@ -66,5 +66,9 @@ export const API_CONFIG = {
 
     // Admin Auth
     ADMIN_LOGIN: "/api/v1/admin/login",
+    ADMIN_REFRESH: "/api/v1/admin/refresh",
+
+    // Vehicle Image Endpoints
+    VEHICLE_IMAGE: (id: number | string) => `/api/v1/vehicles/${id}/image`,
   },
 };

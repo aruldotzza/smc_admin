@@ -242,12 +242,46 @@ export interface AdminLoginPayload {
 export interface AdminLoginResponse {
   success?: boolean;
   token?: string;
+  access_token?: string;
+  accessToken?: string;
+  refresh_token?: string;
+  refreshToken?: string;
   user?: {
     id?: number;
     username?: string;
     email?: string;
     role?: string;
   };
+  [key: string]: any;
+}
+
+export interface AdminRefreshPayload {
+  refresh_token: string;
+}
+
+export interface AdminRefreshResponse {
+  success?: boolean;
+  token?: string;
+  access_token?: string;
+  accessToken?: string;
+  refresh_token?: string;
+  refreshToken?: string;
+  expires_in?: number;
+  user?: {
+    id?: number;
+    username?: string;
+    email?: string;
+    role?: string;
+  };
+  [key: string]: any;
+}
+
+export interface VehicleImageResponse {
+  success?: boolean;
+  message?: string;
+  imageUrl?: string;
+  image_url?: string;
+  vehicle?: ApiVehicle;
   [key: string]: any;
 }
 

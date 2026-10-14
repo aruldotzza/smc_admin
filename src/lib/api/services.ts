@@ -27,6 +27,9 @@ import {
   AdminUpdateDistanceRulePayload,
   AdminLoginPayload,
   AdminLoginResponse,
+  AdminRefreshPayload,
+  AdminRefreshResponse,
+  VehicleImageResponse,
   HealthResponse,
   ReadyResponse,
   ApiService,
@@ -421,4 +424,58 @@ export async function adminLogin(
     body: JSON.stringify(payload),
     // we don't pass requiresAuth: true because login itself doesn't need the admin key
   });
+}
+
+/**
+ * 26. Refresh Admin Token
+ * POST /api/v1/admin/refresh
+ */
+export async function adminRefreshToken(
+  refreshToken: string
+): Promise<AdminRefreshResponse> {
+  return apiRequest<AdminRefreshResponse>(API_CONFIG.ENDPOINTS.ADMIN_REFRESH, {
+    method: "POST",
+    body: JSON.stringify({ refresh_token: refreshToken }),
+  });
+}
+
+// ==========================================
+// 27-28. Vehicle Image Management
+// ==========================================
+
+/**
+ * 27. Upload Vehicle Image
+ * POST /api/v1/vehicles/:id/image
+ */
+export async function uploadVehicleImage(
+  vehicleId: number | string,
+  imageFile: File | Blob
+): Promise<VehicleImageResponse> {
+  const formData = new FormData();
+  formData.append("image", imageFile);
+
+  return apiRequest<VehicleImageResponse>(
+    API_CONFIG.ENDPOINTS.VEHICLE_IMAGE(vehicleId),
+    {
+      method: "POST",
+      body: formData,
+      requiresAuth: true,
+    }
+  );
+}
+
+/**
+ * 28. Delete Vehicle Image
+ * DELETE /api/v1/vehicles/:id/image
+ */
+export async function deleteVehicleImage(
+  vehicleId: number | string
+): Promise<VehicleImageResponse> {
+  return apiRequest<VehicleImageResponse>(
+    API_CONFIG.ENDPOINTS.VEHICLE_IMAGE(vehicleId),
+    {
+      method: "DELETE",
+      requiresAuth: true,
+    }
+  );
 }

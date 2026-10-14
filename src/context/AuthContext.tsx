@@ -4,7 +4,7 @@ import React, { createContext, useContext, useState, useEffect } from "react";
 import { useRouter, usePathname } from "next/navigation";
 
 import Cookies from "js-cookie";
-import { adminLogin } from "@/lib/api/services";
+import { adminLogin, adminRefreshToken } from "@/lib/api/services";
 
 export interface User {
   name: string;
@@ -17,6 +17,7 @@ interface AuthContextType {
   user: User | null;
   isAuthenticated: boolean;
   login: (username: string, password: string) => Promise<boolean>;
+  refreshToken: () => Promise<boolean>;
   logout: () => void;
 }
 
@@ -32,7 +33,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     // If we have a token but no user object, we can construct a placeholder user
-    // or fetch the user from a /me endpoint. For now, we'll restore a placeholder.
     const token = Cookies.get("accessToken");
     if (token && !user) {
       setUser({
@@ -43,6 +43,27 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       });
     }
   }, []);
+
+  const refreshToken = async (): Promise<boolean> => {
+    const storedRefreshToken = Cookies.get("refreshToken");
+    if (!storedRefreshToken) return false;
+    try {
+      const res = await adminRefreshToken(storedRefreshToken);
+      const newToken = res.token || res.accessToken || res.access_token;
+      if (newToken) {
+        Cookies.set("accessToken", newToken, { expires: 1 });
+        const newRefreshToken = res.refreshToken || res.refresh_token;
+        if (newRefreshToken) {
+          Cookies.set("refreshToken", newRefreshToken, { expires: 7 });
+        }
+        return true;
+      }
+    } catch (err) {
+      console.error("Manual refresh token error:", err);
+      logout();
+    }
+    return false;
+  };
 
   const login = async (username: string, pass: string): Promise<boolean> => {
     if (username && pass) {
@@ -57,6 +78,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           
           if (tokenToStore) {
             Cookies.set("accessToken", tokenToStore, { expires: 1 });
+          }
+
+          const refreshTokenToStore = data.refreshToken || data.refresh_token;
+          if (refreshTokenToStore) {
+            Cookies.set("refreshToken", refreshTokenToStore, { expires: 7 });
           }
 
           const loggedUser: User = {
@@ -81,6 +107,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const logout = () => {
     Cookies.remove("accessToken");
+    Cookies.remove("refreshToken");
     setUser(null);
     router.push("/login");
   };
@@ -91,6 +118,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         user,
         isAuthenticated: !!user,
         login,
+        refreshToken,
         logout,
       }}
     >
