@@ -4,18 +4,18 @@ import React from "react";
 import AdminLayout from "@/Components/Layout/AdminLayout";
 import BookingsFilterTabs from "@/Components/Bookings/BookingsFilterTabs";
 import BookingsTable from "@/Components/Bookings/BookingsTable";
-import BookingDetailsDrawer from "@/Components/Bookings/BookingDetailsDrawer";
+import BookingDetailsModal from "@/Components/Bookings/BookingDetailsModal";
 import NewBookingModal from "@/Components/Bookings/NewBookingModal";
 import { useBookings } from "@/context/BookingContext";
 import { Plus } from "lucide-react";
 
 export default function BookingsPage() {
-  const { counts, openNewBookingModal, activeBooking } = useBookings();
+  const { counts, openNewBookingModal } = useBookings();
 
   return (
     <AdminLayout>
       <div className="w-full flex flex-col justify-start items-start gap-5 font-['Manrope']">
-        {/* Page Header matching bookingspaeg.html & Screenshot 3 */}
+        {/* Page Header */}
         <div className="self-stretch flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
           <div className="inline-flex flex-col justify-start items-start">
             <div className="self-stretch flex flex-col justify-start items-start">
@@ -45,19 +45,13 @@ export default function BookingsPage() {
         {/* Filter Tabs & Search Bar */}
         <BookingsFilterTabs />
 
-        {/* 2-Column Responsive Layout matching Screenshot 4 when booking is selected */}
-        <div className="self-stretch flex flex-col lg:flex-row justify-start items-start gap-4">
-          <div className="flex-1 w-full min-w-0">
-            <BookingsTable />
-          </div>
-
-          {/* Details Drawer shown inline on the right side when selected */}
-          {activeBooking && (
-            <div className="w-full lg:w-80 flex-shrink-0">
-              <BookingDetailsDrawer />
-            </div>
-          )}
+        {/* Bookings Table (Full Width) */}
+        <div className="self-stretch w-full min-w-0">
+          <BookingsTable />
         </div>
+
+        {/* Existing Booking Details Popup Modal */}
+        <BookingDetailsModal />
 
         {/* New Booking Modal Popup */}
         <NewBookingModal />
