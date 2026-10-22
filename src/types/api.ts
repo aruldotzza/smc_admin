@@ -20,6 +20,7 @@ export interface VehiclePriceItem {
   unit: "trip" | "hour";
   serviceName: string;
   minimumHours?: number | null;
+  eightHourAmount?: number | null;
 }
 
 export interface VehiclePrices {
@@ -230,6 +231,44 @@ export interface CheckoutResponse {
 }
 
 // ==========================================
+// 4b. Admin Manual Booking Flow (from handoff)
+// ==========================================
+
+export interface AdminManualBookingPayload {
+  customer: CustomerInfo;
+  vehicle_id: number;
+  service_id: number;
+  pickup: {
+    address: string;
+  };
+  drop: {
+    address: string;
+  };
+  add_ons: AddOnSelection[];
+  driver_name?: string;
+  driver_phone?: string;
+  hours?: number;
+}
+
+export interface AdminManualBookingResult {
+  id: string;
+  booking_number: string;
+  payment_method: string;
+  booking_status: string;
+  status: string;
+  total_amount_minor?: string;
+  currency: string;
+  driver_name?: string | null;
+  driver_phone?: string | null;
+  stripe_checkout_url?: string | null;
+  [key: string]: any;
+}
+
+export interface AdminManualBookingResponse {
+  booking: AdminManualBookingResult;
+}
+
+// ==========================================
 // 5. Admin Management Payloads
 // ==========================================
 
@@ -316,6 +355,7 @@ export interface AdminUpdateVehiclePayload {
 
 export interface AdminSetPricePayload {
   amount: number;
+  eightHourAmount?: number | null;
   currency?: string;
   isFrom?: boolean;
   minimumHours?: number | null;

@@ -8,6 +8,7 @@ export interface Vehicle {
   fleetNumber: string;
   name: string;
   model: string;
+  description?: string;
   category: "6_seater" | "7_seater" | "9_seater" | "13_seater" | "wheelchair" | "luxury_sedan";
   plateNumber: string;
   paxCapacity: number;

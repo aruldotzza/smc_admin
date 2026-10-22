@@ -22,6 +22,7 @@ import {
   Plane,
   Sparkles,
   ArrowRight,
+  Trash2,
 } from "lucide-react";
 
 export default function BookingDetailsModal() {
@@ -29,7 +30,9 @@ export default function BookingDetailsModal() {
     activeBooking,
     closeBookingDetails,
     updateBookingStatus,
+    deleteBooking,
   } = useBookings();
+  const [isDeleting, setIsDeleting] = React.useState(false);
 
   // Close on Escape key
   const handleKeyDown = useCallback(
@@ -55,6 +58,24 @@ export default function BookingDetailsModal() {
   }, [activeBooking, handleKeyDown]);
 
   if (!activeBooking) return null;
+
+  const handleDeleteBooking = async () => {
+    if (!activeBooking) return;
+    if (
+      !window.confirm(
+        `Are you sure you want to permanently delete booking ${activeBooking.refNumber}? This will remove all associated snapshots.`
+      )
+    ) {
+      return;
+    }
+    try {
+      setIsDeleting(true);
+      await deleteBooking(activeBooking.id);
+      closeBookingDetails();
+    } finally {
+      setIsDeleting(false);
+    }
+  };
 
   const handleStatusChange = (newStatus: BookingStatus) => {
     updateBookingStatus(activeBooking.id, newStatus);
@@ -530,6 +551,16 @@ export default function BookingDetailsModal() {
           </div>
 
           <div className="flex items-center gap-2.5">
+            <button
+              type="button"
+              onClick={handleDeleteBooking}
+              disabled={isDeleting}
+              className="px-3 py-2 bg-red-50 hover:bg-red-100 border border-red-200 text-red-700 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer disabled:opacity-50"
+              title="Permanently remove this booking"
+            >
+              <Trash2 className="size-3.5 text-red-600" />
+              <span>{isDeleting ? "Deleting..." : "Delete Booking"}</span>
+            </button>
             <button
               type="button"
               onClick={closeBookingDetails}

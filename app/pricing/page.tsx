@@ -16,6 +16,7 @@ export default function PricingPage() {
     setActiveTab,
     addOns,
     updateAddOnItem,
+    deleteAddOnItem,
     distanceRules,
     updateDistancePricingRule,
   } = usePricing();
@@ -23,6 +24,15 @@ export default function PricingPage() {
   const [localAddOnPrices, setLocalAddOnPrices] = useState<Record<number, number>>({});
   const [localDistanceSurcharges, setLocalDistanceSurcharges] = useState<Record<number, number>>({});
   const [savingItem, setSavingItem] = useState<string | null>(null);
+  const [deleteErrorAddon, setDeleteErrorAddon] = useState<{
+    id: number;
+    name: string;
+    message: string;
+  } | null>(null);
+  const [actionNotice, setActionNotice] = useState<{
+    type: "success" | "error";
+    text: string;
+  } | null>(null);
 
   const handleAddOnPriceChange = (id: number, val: number) => {
     setLocalAddOnPrices((prev) => ({ ...prev, [id]: val }));
@@ -43,6 +53,39 @@ export default function PricingPage() {
     setSavingItem(`addon-${id}`);
     await updateAddOnItem(id, { status: nextStatus });
     setSavingItem(null);
+  };
+
+  const handleDeleteAddOn = async (addon: (typeof addOns)[0]) => {
+    if (!window.confirm(`Are you sure you want to permanently delete the add-on "${addon.name}"?`)) {
+      return;
+    }
+    setSavingItem(`addon-del-${addon.id}`);
+    const res = await deleteAddOnItem(addon.id);
+    setSavingItem(null);
+    if (res.success) {
+      setActionNotice({ type: "success", text: `Add-on "${addon.name}" was permanently deleted.` });
+      setTimeout(() => setActionNotice(null), 4000);
+    } else if (res.code === "ADD_ON_IN_USE" || res.error?.includes("COMPLETED")) {
+      setDeleteErrorAddon({
+        id: addon.id,
+        name: addon.name,
+        message:
+          res.error ||
+          "This add-on is used by bookings that are not COMPLETED. Set its status to INACTIVE instead.",
+      });
+    } else {
+      setActionNotice({ type: "error", text: res.error || "Failed to delete add-on." });
+      setTimeout(() => setActionNotice(null), 4000);
+    }
+  };
+
+  const handleDeactivateInUseAddon = async (id: number) => {
+    setSavingItem(`addon-${id}`);
+    await updateAddOnItem(id, { status: "INACTIVE" });
+    setSavingItem(null);
+    setDeleteErrorAddon(null);
+    setActionNotice({ type: "success", text: "Add-on status has been updated to INACTIVE." });
+    setTimeout(() => setActionNotice(null), 4000);
   };
 
   const handleDistanceSurchargeChange = (id: number, val: number) => {
@@ -123,6 +166,56 @@ export default function PricingPage() {
             }`}
           >
             <span>{saveMessage}</span>
+          </div>
+        )}
+
+        {/* Action Notice Toast */}
+        {actionNotice && (
+          <div
+            className={`self-stretch p-3.5 rounded-xl border text-xs flex items-center justify-between ${
+              actionNotice.type === "error"
+                ? "bg-red-50 border-red-200 text-red-700"
+                : "bg-green-50 border-green-200 text-green-700"
+            }`}
+          >
+            <span>{actionNotice.text}</span>
+            <button
+              type="button"
+              onClick={() => setActionNotice(null)}
+              className="font-bold ml-2 hover:opacity-75 cursor-pointer"
+            >
+              ✕
+            </button>
+          </div>
+        )}
+
+        {/* In-use Add-on Deactivation Dialog/Prompt (409 Handler) */}
+        {deleteErrorAddon && (
+          <div className="self-stretch p-4 bg-amber-50 rounded-xl border border-amber-200 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs animate-in fade-in">
+            <div className="flex flex-col gap-1">
+              <span className="font-bold text-amber-900">
+                Cannot Delete &quot;{deleteErrorAddon.name}&quot; (In Use by Bookings)
+              </span>
+              <span className="text-amber-800 leading-relaxed">
+                {deleteErrorAddon.message}
+              </span>
+            </div>
+            <div className="flex items-center gap-2 flex-shrink-0">
+              <button
+                type="button"
+                onClick={() => setDeleteErrorAddon(null)}
+                className="px-3 py-1.5 bg-white border border-stone-300 rounded-lg text-slate-700 font-semibold hover:bg-stone-50 cursor-pointer"
+              >
+                Dismiss
+              </button>
+              <button
+                type="button"
+                onClick={() => handleDeactivateInUseAddon(deleteErrorAddon.id)}
+                className="px-3.5 py-1.5 bg-amber-600 text-white rounded-lg font-bold hover:bg-amber-700 cursor-pointer shadow-xs"
+              >
+                Set as INACTIVE Instead
+              </button>
+            </div>
           </div>
         )}
 
@@ -403,14 +496,25 @@ export default function PricingPage() {
                           </button>
                         </td>
                         <td className="px-5 py-4 text-right">
-                          <button
-                            type="button"
-                            onClick={() => handleSaveAddOn(addon.id, addon.status)}
-                            disabled={isSaving}
-                            className="px-3 py-1.5 bg-color-background-brand text-white rounded-lg text-xs font-semibold hover:opacity-90 transition-opacity cursor-pointer disabled:opacity-50"
-                          >
-                            {isSaving ? "Saving..." : "Save"}
-                          </button>
+                          <div className="inline-flex items-center justify-end gap-2">
+                            <button
+                              type="button"
+                              onClick={() => handleSaveAddOn(addon.id, addon.status)}
+                              disabled={isSaving}
+                              className="px-3 py-1.5 bg-color-background-brand text-white rounded-lg text-xs font-semibold hover:opacity-90 transition-opacity cursor-pointer disabled:opacity-50"
+                            >
+                              {isSaving ? "Saving..." : "Save"}
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => handleDeleteAddOn(addon)}
+                              disabled={savingItem === `addon-del-${addon.id}`}
+                              className="px-2.5 py-1.5 border border-red-200 text-red-600 hover:bg-red-50 rounded-lg text-xs font-semibold transition-colors cursor-pointer disabled:opacity-50"
+                              title="Permanently Delete Add-On"
+                            >
+                              {savingItem === `addon-del-${addon.id}` ? "..." : "Delete"}
+                            </button>
+                          </div>
                         </td>
                       </tr>
                     );

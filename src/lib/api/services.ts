@@ -34,6 +34,8 @@ import {
   ReadyResponse,
   ApiService,
   ApiVehicleType,
+  AdminManualBookingPayload,
+  AdminManualBookingResponse,
 } from "@/types/api";
 
 // ==========================================
@@ -160,6 +162,41 @@ export async function checkoutBooking(
   });
 }
 
+/**
+ * Create a manual booking from admin
+ * POST /api/v1/bookings
+ */
+export async function createAdminManualBooking(
+  payload: AdminManualBookingPayload,
+  idempotencyKey?: string
+): Promise<AdminManualBookingResponse> {
+  return apiRequest<AdminManualBookingResponse>(
+    API_CONFIG.ENDPOINTS.ADMIN_CREATE_BOOKING,
+    {
+      method: "POST",
+      body: JSON.stringify(payload),
+      requiresAuth: true,
+      idempotencyKey,
+    }
+  );
+}
+
+/**
+ * Permanently delete a booking
+ * DELETE /api/v1/bookings/:idOrBookingNumber
+ */
+export async function deleteBookingApi(
+  idOrBookingNumber: string
+): Promise<void> {
+  return apiRequest<void>(
+    API_CONFIG.ENDPOINTS.ADMIN_DELETE_BOOKING(idOrBookingNumber),
+    {
+      method: "DELETE",
+      requiresAuth: true,
+    }
+  );
+}
+
 // ==========================================
 // 10-14. Admin Vehicle & Type Management
 // ==========================================
@@ -229,6 +266,24 @@ export async function updateVehicle(
     {
       method: "PATCH",
       body: JSON.stringify(payload),
+      requiresAuth: true,
+    }
+  );
+}
+
+/**
+ * Activate or deactivate a fleet vehicle
+ * PATCH /api/v1/vehicles/:id with { status: "active" | "inactive" }
+ */
+export async function setVehicleStatus(
+  id: number | string,
+  status: "active" | "inactive"
+): Promise<SingleVehicleResponse> {
+  return apiRequest<SingleVehicleResponse>(
+    API_CONFIG.ENDPOINTS.ADMIN_UPDATE_VEHICLE(id),
+    {
+      method: "PATCH",
+      body: JSON.stringify({ status }),
       requiresAuth: true,
     }
   );
@@ -329,6 +384,18 @@ export async function updateAddOn(
       requiresAuth: true,
     }
   );
+}
+
+/**
+ * Delete an add-on item permanently
+ * DELETE /api/v1/add-ons/:id
+ * Allowed when unused or all linked bookings have operational status COMPLETED.
+ */
+export async function deleteAddOn(id: number | string): Promise<void> {
+  return apiRequest<void>(API_CONFIG.ENDPOINTS.ADMIN_DELETE_ADDON(id), {
+    method: "DELETE",
+    requiresAuth: true,
+  });
 }
 
 // ==========================================

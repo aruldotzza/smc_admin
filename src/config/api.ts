@@ -52,6 +52,12 @@ export const API_CONFIG = {
     // 17-18. Admin Extras & Add-ons
     ADMIN_CREATE_ADDON: "/api/add-ons",
     ADMIN_UPDATE_ADDON: (id: number | string) => `/api/add-ons/${id}`,
+    ADMIN_DELETE_ADDON: (id: number | string) => `/api/v1/add-ons/${id}`,
+
+    // Admin Booking Management (from handoff)
+    ADMIN_CREATE_BOOKING: "/api/v1/bookings",
+    ADMIN_DELETE_BOOKING: (idOrBookingNumber: string) =>
+      `/api/v1/bookings/${idOrBookingNumber}`,
 
     // 19-21. Admin Distance Pricing Rules
     ADMIN_DISTANCE_RULES: "/api/distance-pricing-rules",

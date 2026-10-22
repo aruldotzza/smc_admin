@@ -10,6 +10,15 @@ import { useFleet } from "@/context/FleetContext";
 export default function FleetPage() {
   const { vehicles, activeVehiclesCount, totalVehiclesCount, openAddVehicleModal } =
     useFleet();
+  const [statusFilter, setStatusFilter] = React.useState<"all" | "active" | "inactive">("all");
+
+  const displayedVehicles = vehicles.filter((v) => {
+    if (statusFilter === "active") return v.status === "active";
+    if (statusFilter === "inactive") return v.status === "inactive";
+    return true;
+  });
+
+  const inactiveCount = Math.max(0, totalVehiclesCount - activeVehiclesCount);
 
   return (
     <AdminLayout>
@@ -43,12 +52,55 @@ export default function FleetPage() {
           </button>
         </div>
 
-        {/* Fleet Grid (6 vehicles) */}
-        <div className="self-stretch grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-5">
-          {vehicles.map((vehicle) => (
-            <FleetCard key={vehicle.id} vehicle={vehicle} />
-          ))}
+        {/* Filter Pills */}
+        <div className="self-stretch flex items-center gap-2 border-b border-color-border-subtle pb-3">
+          <button
+            type="button"
+            onClick={() => setStatusFilter("all")}
+            className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+              statusFilter === "all"
+                ? "bg-stone-900 text-white"
+                : "bg-stone-100 text-stone-600 hover:bg-stone-200"
+            }`}
+          >
+            All Fleets ({totalVehiclesCount})
+          </button>
+          <button
+            type="button"
+            onClick={() => setStatusFilter("active")}
+            className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+              statusFilter === "active"
+                ? "bg-emerald-600 text-white"
+                : "bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border border-emerald-200"
+            }`}
+          >
+            Active ({activeVehiclesCount})
+          </button>
+          <button
+            type="button"
+            onClick={() => setStatusFilter("inactive")}
+            className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+              statusFilter === "inactive"
+                ? "bg-rose-600 text-white"
+                : "bg-stone-100 text-stone-600 hover:bg-stone-200"
+            }`}
+          >
+            Inactive / Deactivated ({inactiveCount})
+          </button>
         </div>
+
+        {/* Fleet Grid */}
+        {displayedVehicles.length === 0 ? (
+          <div className="w-full bg-white rounded-xl border border-stone-200 p-12 text-center text-xs text-stone-500">
+            No vehicles match the selected status filter.
+          </div>
+        ) : (
+          <div className="self-stretch grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-5">
+            {displayedVehicles.map((vehicle) => (
+              <FleetCard key={vehicle.id} vehicle={vehicle} />
+            ))}
+          </div>
+        )}
 
         {/* Modals */}
         <AddVehicleModal />

@@ -5,12 +5,14 @@ import { Vehicle, VehicleStatus } from "@/types/fleet";
 import { initialFleet } from "@/data/initialFleet";
 import {
   getVehicles,
+  getVehicleById,
   createVehicle as apiCreateVehicle,
   updateVehicle as apiUpdateVehicle,
   setVehicleServiceRate,
   uploadVehicleImage as apiUploadVehicleImage,
   deleteVehicleImage as apiDeleteVehicleImage,
 } from "@/lib/api/services";
+import { invalidateApiCache } from "@/lib/api/client";
 import { ApiVehicle } from "@/types/api";
 import { API_CONFIG } from "@/config/api";
 
@@ -82,7 +84,8 @@ function mapApiToVehicle(v: ApiVehicle, index: number): Vehicle {
     apiId: v.id,
     fleetNumber: `SMC-${String(index + 1).padStart(3, "0")}`,
     name: v.name,
-    model: v.description || v.vehicleType || "Maxi Cab",
+    model: v.vehicleType || "Maxi Cab",
+    description: v.description || "",
     category: inferCategory(v.name, v.passengerCapacity),
     plateNumber: driver.plate,
     paxCapacity: v.passengerCapacity || 6,
@@ -119,8 +122,38 @@ export function FleetProvider({ children }: { children: React.ReactNode }) {
       setError(null);
       const res = await getVehicles();
       if (res && res.data && res.data.length > 0) {
-        const mapped = res.data.map((item, idx) => mapApiToVehicle(item, idx));
-        setVehicles(mapped);
+        const activeMapped = res.data.map((item, idx) => mapApiToVehicle(item, idx));
+
+        // Inactive vehicles disappear from public /api/v1/vehicles lists
+        // Retrieve any tracked inactive vehicle IDs to fetch via /api/v1/vehicles/:id
+        let inactiveIds: number[] = [];
+        try {
+          if (typeof window !== "undefined") {
+            const stored = localStorage.getItem("smc_inactive_vehicle_ids");
+            if (stored) inactiveIds = JSON.parse(stored);
+          }
+        } catch {}
+
+        const inactiveVehicles: Vehicle[] = [];
+        for (const inactId of inactiveIds) {
+          if (!activeMapped.some((v) => v.apiId === inactId)) {
+            try {
+              const single = await getVehicleById(inactId);
+              if (single?.vehicle) {
+                const mappedInactive = mapApiToVehicle(
+                  single.vehicle,
+                  activeMapped.length + inactiveVehicles.length
+                );
+                mappedInactive.status = "inactive";
+                inactiveVehicles.push(mappedInactive);
+              }
+            } catch (err) {
+              console.warn(`Could not fetch inactive vehicle ${inactId}:`, err);
+            }
+          }
+        }
+
+        setVehicles([...activeMapped, ...inactiveVehicles]);
       }
     } catch (err: any) {
       console.warn("Could not fetch vehicles from live API, using local fleet state:", err?.message);
@@ -153,7 +186,7 @@ export function FleetProvider({ children }: { children: React.ReactNode }) {
       try {
         const created = await apiCreateVehicle({
           name: data.name || "New Vehicle",
-          description: data.model || "Executive MPV",
+          description: data.description !== undefined ? data.description : (data.model || "Executive MPV"),
           passengerCapacity: data.paxCapacity || 6,
           luggageCapacity: data.luggageCapacity || 4,
           currency: "SGD",
@@ -189,6 +222,7 @@ export function FleetProvider({ children }: { children: React.ReactNode }) {
         fleetNumber: data.fleetNumber || `SMC-00${vehicles.length + 1}`,
         name: data.name || "New Vehicle",
         model: data.model || "Toyota Alphard",
+        description: data.description || "",
         category: data.category || "6_seater",
         plateNumber: data.plateNumber || "SGA 1111 A",
         paxCapacity: data.paxCapacity || 6,
@@ -216,7 +250,7 @@ export function FleetProvider({ children }: { children: React.ReactNode }) {
         // 1. Update vehicle metadata
         await apiUpdateVehicle(numId, {
           name: updates.name,
-          description: updates.model,
+          description: updates.description !== undefined ? updates.description : updates.model,
           passengerCapacity: updates.paxCapacity,
           luggageCapacity: updates.luggageCapacity,
           status: updates.status ? (updates.status === "active" ? "active" : "inactive") : undefined,
@@ -241,7 +275,10 @@ export function FleetProvider({ children }: { children: React.ReactNode }) {
           });
         }
 
-        await refreshVehicles();
+        invalidateApiCache("vehicles");
+        setVehicles((prev) =>
+          prev.map((v) => (v.id === id ? { ...v, ...updates } : v))
+        );
         closeEditVehicleModal();
         return;
       } catch (err) {
@@ -268,7 +305,25 @@ export function FleetProvider({ children }: { children: React.ReactNode }) {
         await apiUpdateVehicle(numId, {
           status: nextStatus === "active" ? "active" : "inactive",
         });
-        await refreshVehicles();
+
+        // Track inactive IDs in localStorage so they can still be viewed & activated in Admin
+        try {
+          if (typeof window !== "undefined") {
+            const stored = localStorage.getItem("smc_inactive_vehicle_ids");
+            let ids: number[] = stored ? JSON.parse(stored) : [];
+            if (nextStatus === "inactive") {
+              if (!ids.includes(numId)) ids.push(numId);
+            } else {
+              ids = ids.filter((i) => i !== numId);
+            }
+            localStorage.setItem("smc_inactive_vehicle_ids", JSON.stringify(ids));
+          }
+        } catch {}
+
+        invalidateApiCache("vehicles");
+        setVehicles((prev) =>
+          prev.map((v) => (v.id === id ? { ...v, status: nextStatus } : v))
+        );
         return;
       } catch (err) {
         console.warn("API toggle vehicle status failed, toggling locally:", err);

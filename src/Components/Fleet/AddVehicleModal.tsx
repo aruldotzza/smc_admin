@@ -11,6 +11,7 @@ export default function AddVehicleModal() {
   const [fleetNumber, setFleetNumber] = useState(`SMC-00${totalVehiclesCount + 1}`);
   const [name, setName] = useState("");
   const [model, setModel] = useState("");
+  const [description, setDescription] = useState("");
   const [imagePath, setImagePath] = useState("/assets/2edae.png");
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [imagePreviewUrl, setImagePreviewUrl] = useState<string | null>(null);
@@ -51,6 +52,7 @@ export default function AddVehicleModal() {
         fleetNumber: fleetNumber || `SMC-00${totalVehiclesCount + 1}`,
         name,
         model: model || "Toyota Vellfire / Alphard",
+        description: description.trim(),
         category: "6_seater",
         plateNumber: "SHA 1234 X",
         paxCapacity: Number(paxCapacity),
@@ -144,6 +146,25 @@ export default function AddVehicleModal() {
                   onChange={(e) => setModel(e.target.value)}
                   placeholder="e.g. Toyota Vellfire / Alphard"
                   className="self-stretch h-10 px-3 py-2.5 bg-stone-100 rounded-lg outline outline-1 outline-offset-[-1px] outline-color-border-subtle text-xs text-color-text-primary font-normal font-['Manrope'] focus:outline-none"
+                />
+              </div>
+
+              {/* Description (max 1000 characters) */}
+              <div className="self-stretch flex flex-col justify-start items-start gap-1">
+                <div className="self-stretch flex justify-between items-center">
+                  <div className="justify-start text-color-input-placeholder text-xs font-semibold font-['Manrope'] uppercase leading-4 tracking-wide">
+                    Vehicle Description
+                  </div>
+                  <span className="text-[10px] text-slate-400 font-medium">
+                    {description.length} / 1000
+                  </span>
+                </div>
+                <textarea
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value.slice(0, 1000))}
+                  placeholder="The Toyota Alphard / Vellfire is an executive MPV for families and small groups... (max 1000 chars)"
+                  rows={3}
+                  className="self-stretch p-3 bg-stone-100 rounded-lg outline outline-1 outline-offset-[-1px] outline-color-border-subtle text-xs text-color-text-primary font-normal font-['Manrope'] focus:outline-none resize-none leading-relaxed"
                 />
               </div>
 

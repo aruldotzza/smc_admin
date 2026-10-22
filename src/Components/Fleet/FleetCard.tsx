@@ -27,7 +27,8 @@ export default function FleetCard({ vehicle }: FleetCardProps) {
   };
 
   const charter3h = vehicle.baseRate * 3 - 15;
-  const charter8h = vehicle.hourlyRate * 8;
+  const charter8h =
+    vehicle.prices?.hourly?.eightHourAmount ?? (vehicle.hourlyRate * 8);
 
   return (
     <div className="bg-color-background-white rounded-xl outline outline-1 outline-offset-[-1px] outline-color-border-subtle flex flex-col justify-start items-start overflow-hidden font-['Manrope']">
@@ -97,7 +98,7 @@ export default function FleetCard({ vehicle }: FleetCardProps) {
 
       {/* Card Content Body */}
       <div className="self-stretch flex-1 p-4 flex flex-col justify-start items-start gap-3">
-        {/* Title & Model */}
+        {/* Title & Model & Description */}
         <div className="self-stretch flex flex-col justify-start items-start">
           <div className="self-stretch flex flex-col justify-start items-start">
             <div className="justify-start text-color-text-primary text-base font-bold font-['Manrope'] leading-6 truncate">
@@ -109,6 +110,13 @@ export default function FleetCard({ vehicle }: FleetCardProps) {
               {vehicle.model}
             </div>
           </div>
+          {vehicle.description && (
+            <div className="self-stretch pt-1.5">
+              <p className="text-[11px] text-slate-600 font-normal leading-relaxed line-clamp-2" title={vehicle.description}>
+                {vehicle.description}
+              </p>
+            </div>
+          )}
         </div>
 
         {/* Assigned Driver Row */}
@@ -217,9 +225,13 @@ export default function FleetCard({ vehicle }: FleetCardProps) {
           <button
             type="button"
             onClick={() => toggleVehicleStatus(vehicle.id)}
-            className="px-3 py-2 rounded-lg outline outline-1 outline-offset-[-1px] outline-red-200 flex justify-center items-center gap-1.5 hover:bg-red-50 transition-colors cursor-pointer"
+            className={`px-3.5 py-2 rounded-lg outline outline-1 outline-offset-[-1px] flex justify-center items-center gap-1.5 transition-colors cursor-pointer ${
+              vehicle.status === "active"
+                ? "outline-red-200 text-red-600 hover:bg-red-50"
+                : "outline-emerald-300 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 font-bold"
+            }`}
           >
-            <div className="text-center justify-start text-red-600 text-xs font-semibold font-['Manrope'] leading-4">
+            <div className="text-center justify-start text-xs font-semibold font-['Manrope'] leading-4">
               {vehicle.status === "active" ? "Deactivate" : "Activate"}
             </div>
           </button>

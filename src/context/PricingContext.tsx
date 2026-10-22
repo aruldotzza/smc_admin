@@ -9,6 +9,7 @@ import {
   getAddOns,
   updateAddOn,
   createAddOn,
+  deleteAddOn,
   getDistanceRules,
   updateDistanceRule,
   createDistanceRule,
@@ -49,6 +50,9 @@ interface PricingContextType {
     updates: AdminUpdateAddOnPayload
   ) => Promise<boolean>;
   createAddOnItem: (payload: AdminCreateAddOnPayload) => Promise<boolean>;
+  deleteAddOnItem: (
+    id: number
+  ) => Promise<{ success: boolean; error?: string; code?: string }>;
 
   // Distance Rules
   distanceRules: ApiDistanceRule[];
@@ -97,7 +101,8 @@ export function PricingProvider({ children }: { children: React.ReactNode }) {
             const charter3h =
               v.prices?.hourly?.amount ? v.prices.hourly.amount * 3 - 15 : 180;
             const charter8h =
-              v.prices?.hourly?.amount ? v.prices.hourly.amount * 8 : 480;
+              v.prices?.hourly?.eightHourAmount ??
+              (v.prices?.hourly?.amount ? v.prices.hourly.amount * 8 : 480);
 
             const pax = v.passengerCapacity ? `${v.passengerCapacity} Passengers` : "6 Passengers";
             const luggage = v.luggageCapacity ? `${v.luggageCapacity} Luggage` : "4 Luggage";
@@ -189,6 +194,7 @@ export function PricingProvider({ children }: { children: React.ReactNode }) {
           const hourlyAmount = Math.round(rate.charter8h / 8) || 65;
           await setVehicleServiceRate(numId, "hourly", {
             amount: hourlyAmount,
+            eightHourAmount: rate.charter8h,
             currency: "SGD",
             minimumHours: 3,
             status: "active",
@@ -265,6 +271,25 @@ export function PricingProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  const deleteAddOnItem = async (
+    id: number
+  ): Promise<{ success: boolean; error?: string; code?: string }> => {
+    try {
+      await deleteAddOn(id);
+      setAddOns((prev) => prev.filter((a) => a.id !== id));
+      invalidateApiCache("add-ons");
+      return { success: true };
+    } catch (err: any) {
+      console.warn("Failed to delete add-on:", err);
+      const code = err?.code || err?.details?.error?.code || "DELETE_FAILED";
+      const message =
+        err?.message ||
+        err?.details?.error?.message ||
+        "Failed to delete add-on.";
+      return { success: false, code, error: message };
+    }
+  };
+
   const updateDistancePricingRule = async (
     id: number,
     updates: AdminUpdateDistanceRulePayload
@@ -313,6 +338,7 @@ export function PricingProvider({ children }: { children: React.ReactNode }) {
         addOns,
         updateAddOnItem,
         createAddOnItem,
+        deleteAddOnItem,
         distanceRules,
         updateDistancePricingRule,
         createDistancePricingRule,

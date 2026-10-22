@@ -17,6 +17,7 @@ export default function EditVehicleModal() {
   const [fleetNumber, setFleetNumber] = useState("");
   const [name, setName] = useState("");
   const [model, setModel] = useState("");
+  const [description, setDescription] = useState("");
   const [imagePath, setImagePath] = useState("/assets/2edae.png");
   const [currentImageUrl, setCurrentImageUrl] = useState<string | undefined>(undefined);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -41,6 +42,7 @@ export default function EditVehicleModal() {
       setFleetNumber(editingVehicle.fleetNumber || "SMC-001");
       setName(editingVehicle.name);
       setModel(editingVehicle.model);
+      setDescription(editingVehicle.description || "");
       setImagePath(editingVehicle.imagePath || "/assets/2edae.png");
       setCurrentImageUrl(editingVehicle.imageUrl);
       setSelectedFile(null);
@@ -53,7 +55,10 @@ export default function EditVehicleModal() {
       setBaseFare(editingVehicle.baseRate);
       setMeetAndGreet(editingVehicle.baseRate + 10);
       setCharter3h(editingVehicle.baseRate * 3 - 15);
-      setCharter8h(editingVehicle.hourlyRate * 8);
+      const pkg8h =
+        editingVehicle.prices?.hourly?.eightHourAmount ??
+        (editingVehicle.hourlyRate * 8);
+      setCharter8h(pkg8h);
       setIsActive(editingVehicle.status === "active");
     }
   }, [editingVehicle]);
@@ -128,6 +133,7 @@ export default function EditVehicleModal() {
         fleetNumber,
         name,
         model,
+        description: description.trim(),
         imagePath,
         driverName,
         driverPhone,
@@ -215,6 +221,25 @@ export default function EditVehicleModal() {
                   value={model}
                   onChange={(e) => setModel(e.target.value)}
                   className="self-stretch h-10 px-3 py-2.5 bg-stone-100 rounded-lg outline outline-1 outline-offset-[-1px] outline-color-border-subtle text-xs text-color-text-primary font-normal font-['Manrope'] focus:outline-none"
+                />
+              </div>
+
+              {/* Description (max 1000 characters) */}
+              <div className="self-stretch flex flex-col justify-start items-start gap-1">
+                <div className="self-stretch flex justify-between items-center">
+                  <div className="justify-start text-color-input-placeholder text-xs font-semibold font-['Manrope'] uppercase leading-4 tracking-wide">
+                    Vehicle Description
+                  </div>
+                  <span className="text-[10px] text-slate-400 font-medium">
+                    {description.length} / 1000
+                  </span>
+                </div>
+                <textarea
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value.slice(0, 1000))}
+                  placeholder="The Toyota Alphard / Vellfire is an executive MPV for families and small groups... (max 1000 chars)"
+                  rows={3}
+                  className="self-stretch p-3 bg-stone-100 rounded-lg outline outline-1 outline-offset-[-1px] outline-color-border-subtle text-xs text-color-text-primary font-normal font-['Manrope'] focus:outline-none resize-none leading-relaxed"
                 />
               </div>
 

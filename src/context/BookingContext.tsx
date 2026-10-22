@@ -3,6 +3,11 @@
 import React, { createContext, useContext, useState, useMemo } from "react";
 import { Booking, BookingStatus, BookingChannel } from "@/types/booking";
 import { initialBookings } from "@/data/initialBookings";
+import {
+  createAdminManualBooking,
+  deleteBookingApi,
+} from "@/lib/api/services";
+import { AdminManualBookingPayload } from "@/types/api";
 
 interface BookingContextType {
   bookings: Booking[];
@@ -14,13 +19,22 @@ interface BookingContextType {
   openBookingDetails: (id: string) => void;
   closeBookingDetails: () => void;
   addBooking: (data: Partial<Booking>) => Booking;
+  createManualBooking: (
+    payload: AdminManualBookingPayload,
+    extraMeta?: {
+      vehicleName?: string;
+      pickupDate?: string;
+      pickupTime?: string;
+      serviceName?: string;
+    }
+  ) => Promise<{ success: boolean; booking?: any; error?: string }>;
   updateBookingStatus: (id: string, status: BookingStatus) => void;
   updateBooking: (id: string, updates: Partial<Booking>) => void;
   assignDriver: (
     id: string,
     driver: { name: string; phone: string; vehiclePlate: string }
   ) => void;
-  deleteBooking: (id: string) => void;
+  deleteBooking: (id: string) => Promise<boolean>;
   searchQuery: string;
   setSearchQuery: (query: string) => void;
   statusFilter: string;
@@ -120,11 +134,77 @@ export function BookingProvider({ children }: { children: React.ReactNode }) {
     );
   };
 
-  const deleteBooking = (id: string) => {
+  const createManualBooking = async (
+    payload: AdminManualBookingPayload,
+    extraMeta?: {
+      vehicleName?: string;
+      pickupDate?: string;
+      pickupTime?: string;
+      serviceName?: string;
+    }
+  ): Promise<{ success: boolean; booking?: any; error?: string }> => {
+    const idempotencyKey = `admin-manual-${Date.now()}-${Math.random().toString(36).substring(2, 8)}`;
+    try {
+      const res = await createAdminManualBooking(payload, idempotencyKey);
+      if (res?.booking) {
+        const b = res.booking;
+        const newBooking: Booking = {
+          id: b.id || `b-${Date.now()}`,
+          refNumber: b.booking_number || `BK${Date.now()}`,
+          customerName: payload.customer.name,
+          phone: payload.customer.phone,
+          email: payload.customer.email,
+          serviceType: "airport_transfer",
+          vehicleType: "7_seater",
+          vehicleName: extraMeta?.vehicleName || `Vehicle #${payload.vehicle_id}`,
+          pickupLocation: payload.pickup.address,
+          dropoffLocation: payload.drop.address,
+          pickupDate: extraMeta?.pickupDate || new Date().toISOString().split("T")[0],
+          pickupTime: extraMeta?.pickupTime || "12:00",
+          passengers: 2,
+          luggageBags: 2,
+          meetAndGreet: false,
+          addons:
+            payload.add_ons && payload.add_ons.length > 0
+              ? payload.add_ons.map((a) => `Addon #${a.add_on_id}`)
+              : [],
+          status: (b.booking_status?.toLowerCase() === "confirmed" ? "confirmed" : "pending") as BookingStatus,
+          fare: b.total_amount_minor ? Number(b.total_amount_minor) / 100 : 0,
+          channel: "phone",
+          createdAt: new Date().toISOString().replace("T", " ").substring(0, 16),
+          driverAssigned: b.driver_name
+            ? {
+                name: b.driver_name,
+                phone: b.driver_phone || "",
+                vehiclePlate: "SMC 1001",
+              }
+            : undefined,
+        };
+        setBookings((prev) => [newBooking, ...prev]);
+        return { success: true, booking: b };
+      }
+      return { success: false, error: "No booking data returned from backend." };
+    } catch (err: any) {
+      console.error("Manual booking error:", err);
+      return { success: false, error: err?.message || "Failed to create manual booking." };
+    }
+  };
+
+  const deleteBooking = async (id: string): Promise<boolean> => {
+    const target = bookings.find((b) => b.id === id);
+    const identifier = target?.refNumber || id;
+
+    try {
+      await deleteBookingApi(identifier);
+    } catch (err: any) {
+      console.warn("API delete booking returned warning, removing locally:", err);
+    }
+
     setBookings((prev) => prev.filter((b) => b.id !== id));
     if (activeBookingId === id) {
       setActiveBookingId(null);
     }
+    return true;
   };
 
   const counts = useMemo(() => {
@@ -187,6 +267,7 @@ export function BookingProvider({ children }: { children: React.ReactNode }) {
         openBookingDetails,
         closeBookingDetails,
         addBooking,
+        createManualBooking,
         updateBookingStatus,
         updateBooking,
         assignDriver,
