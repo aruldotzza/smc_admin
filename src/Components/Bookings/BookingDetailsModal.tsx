@@ -81,28 +81,121 @@ export default function BookingDetailsModal() {
     updateBookingStatus(activeBooking.id, newStatus);
   };
 
-  const openCustomerWhatsApp = () => {
-    const text = encodeURIComponent(
-      `Hello ${activeBooking.customerName}, this is Singapore Maxicabs regarding your booking ${activeBooking.refNumber} on ${activeBooking.pickupDate} at ${activeBooking.pickupTime}.`
-    );
-    window.open(
-      `https://wa.me/${activeBooking.phone.replace(/[^0-9]/g, "")}?text=${text}`,
-      "_blank"
+  const formatService = (type?: string) => {
+    if (!type) return "Transfer";
+    const map: Record<string, string> = {
+      airport_transfer: "Airport Transfer",
+      airport_departure: "Airport Departure",
+      city_transfer: "Point-to-Point Transfer",
+      hourly_charter: "Hourly Charter",
+      special_occasions: "Special Occasions",
+      corporate: "Corporate Transfer",
+    };
+    return (
+      map[type] ||
+      type
+        .split("_")
+        .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+        .join(" ")
     );
   };
 
-  const openDriverWhatsApp = () => {
-    const phone =
-      activeBooking.assignedDriver?.phone || activeBooking.driverAssigned?.phone;
-    if (phone) {
-      const text = encodeURIComponent(
-        `Hello ${driverName}, booking update for ${activeBooking.refNumber}: Pickup at ${activeBooking.pickupLocation} on ${activeBooking.pickupDate} ${activeBooking.pickupTime}. Customer: ${activeBooking.customerName} (${activeBooking.phone}).`
-      );
-      window.open(
-        `https://wa.me/${phone.replace(/[^0-9]/g, "")}?text=${text}`,
-        "_blank"
-      );
+  const openCustomerWhatsApp = () => {
+    let cleanPhone = activeBooking.phone ? activeBooking.phone.replace(/[^0-9]/g, "") : "";
+    if (cleanPhone.length === 8) {
+      cleanPhone = `65${cleanPhone}`;
     }
+    if (!cleanPhone) {
+      alert("No customer phone number available.");
+      return;
+    }
+
+    const statusLabel = activeBooking.status
+      ? activeBooking.status.replace("_", " ").toUpperCase()
+      : "CONFIRMED";
+    const vehicleLabel = activeBooking.vehicleName || "Maxi Cab";
+    const assignedDriver = activeBooking.assignedDriver || activeBooking.driverAssigned;
+
+    const summaryLines = [
+      `🚕 *Singapore Maxicabs — Booking Summary*`,
+      ``,
+      `Hello *${activeBooking.customerName}*, here is your booking confirmation:`,
+      ``,
+      `📋 *Booking Ref:* ${activeBooking.refNumber}`,
+      `📌 *Status:* ${statusLabel}`,
+      `🚗 *Vehicle:* ${vehicleLabel}`,
+      `🛠️ *Service:* ${formatService(activeBooking.serviceType)}`,
+      ``,
+      `📅 *Date & Time:* ${activeBooking.pickupDate} at ${activeBooking.pickupTime}`,
+      `📍 *Pickup:* ${activeBooking.pickupLocation}`,
+      `🏁 *Drop-off:* ${activeBooking.dropoffLocation}`,
+      ...(activeBooking.flightNumber ? [`✈️ *Flight No:* ${activeBooking.flightNumber}`] : []),
+      ``,
+      `👥 *Passengers:* ${activeBooking.passengers || 1} pax`,
+      `🧳 *Luggage:* ${activeBooking.luggageBags ?? activeBooking.luggage ?? 0} bags`,
+      ...(activeBooking.meetAndGreet ? [`🤝 *Meet & Greet:* Yes (Included)`] : []),
+      ...(activeBooking.addons && activeBooking.addons.length > 0
+        ? [`✨ *Add-ons:* ${activeBooking.addons.join(", ")}`]
+        : []),
+      ...(activeBooking.specialRequest || activeBooking.notes
+        ? [`📝 *Special Request:* ${activeBooking.specialRequest || activeBooking.notes}`]
+        : []),
+      ``,
+      `💰 *Total Fare:* SGD $${activeBooking.fare}`,
+      ...(assignedDriver?.name
+        ? [
+            `👨‍✈️ *Assigned Driver:* ${assignedDriver.name} (${assignedDriver.phone || "Contact via SMC"})${
+              assignedDriver.vehiclePlate ? ` [Plate: ${assignedDriver.vehiclePlate}]` : ""
+            }`,
+          ]
+        : []),
+      ``,
+      `Thank you for choosing Singapore Maxicabs! Please let us know if you need any adjustments.`,
+    ];
+
+    const text = encodeURIComponent(summaryLines.join("\n"));
+    window.open(`https://wa.me/${cleanPhone}?text=${text}`, "_blank");
+  };
+
+  const openDriverWhatsApp = () => {
+    const driver = activeBooking.assignedDriver || activeBooking.driverAssigned;
+    const phone = driver?.phone;
+    if (!phone) {
+      alert("No driver phone number available.");
+      return;
+    }
+
+    let cleanPhone = phone.replace(/[^0-9]/g, "");
+    if (cleanPhone.length === 8) {
+      cleanPhone = `65${cleanPhone}`;
+    }
+
+    const driverMsgLines = [
+      `🚕 *Singapore Maxicabs — Trip Assignment*`,
+      ``,
+      `Hello *${driver?.name || driverName}*, here are the trip assignment details for *${activeBooking.refNumber}*:`,
+      ``,
+      `👤 *Customer:* ${activeBooking.customerName} (${activeBooking.phone})`,
+      `📅 *Date & Time:* ${activeBooking.pickupDate} at ${activeBooking.pickupTime}`,
+      `📍 *Pickup:* ${activeBooking.pickupLocation}`,
+      `🏁 *Drop-off:* ${activeBooking.dropoffLocation}`,
+      `🛠️ *Service:* ${formatService(activeBooking.serviceType)}`,
+      ...(activeBooking.flightNumber ? [`✈️ *Flight No:* ${activeBooking.flightNumber}`] : []),
+      `👥 *Pax:* ${activeBooking.passengers || 1} | 🧳 *Bags:* ${activeBooking.luggageBags ?? activeBooking.luggage ?? 0}`,
+      ...(activeBooking.meetAndGreet ? [`🤝 *Meet & Greet:* Yes`] : []),
+      ...(activeBooking.addons && activeBooking.addons.length > 0
+        ? [`✨ *Add-ons:* ${activeBooking.addons.join(", ")}`]
+        : []),
+      ...(activeBooking.specialRequest || activeBooking.notes
+        ? [`📝 *Notes:* ${activeBooking.specialRequest || activeBooking.notes}`]
+        : []),
+      `💰 *Fare:* SGD $${activeBooking.fare}`,
+      ``,
+      `Please confirm once received.`,
+    ];
+
+    const text = encodeURIComponent(driverMsgLines.join("\n"));
+    window.open(`https://wa.me/${cleanPhone}?text=${text}`, "_blank");
   };
 
   const driverName =
@@ -517,6 +610,7 @@ export default function BookingDetailsModal() {
                 <button
                   type="button"
                   onClick={openCustomerWhatsApp}
+                  title="Send full booking summary to customer via WhatsApp"
                   className="w-full py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-semibold flex items-center justify-center gap-2 transition-colors cursor-pointer shadow-xs"
                 >
                   <MessageCircle className="size-4" />
