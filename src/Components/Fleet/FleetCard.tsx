@@ -3,6 +3,8 @@
 import React from "react";
 import { Vehicle } from "@/types/fleet";
 import { useFleet } from "@/context/FleetContext";
+import { Pencil } from "lucide-react";
+import { WhatsAppIcon } from "@/Shared/Icons";
 
 interface FleetCardProps {
   vehicle: Vehicle;
@@ -141,12 +143,10 @@ export default function FleetCard({ vehicle }: FleetCardProps) {
           <button
             type="button"
             onClick={openWhatsApp}
-            className="size-7 bg-color-status-success rounded-md flex justify-center items-center flex-shrink-0 cursor-pointer hover:opacity-90 transition-opacity"
+            className="size-7 bg-color-status-success rounded-md flex justify-center items-center flex-shrink-0 cursor-pointer hover:opacity-90 transition-opacity text-white"
             title="Chat on WhatsApp"
           >
-            <div className="size-3.5 relative overflow-hidden flex items-center justify-center">
-              <div className="size-3 bg-color-input-background rounded-full" />
-            </div>
+            <WhatsAppIcon className="size-4 text-white" />
           </button>
         </div>
 
@@ -214,9 +214,7 @@ export default function FleetCard({ vehicle }: FleetCardProps) {
             onClick={() => openEditVehicleModal(vehicle)}
             className="flex-1 py-2 bg-color-background-brand rounded-lg flex justify-center items-center gap-1.5 hover:opacity-90 transition-opacity cursor-pointer"
           >
-            <div className="size-3.5 relative overflow-hidden flex items-center justify-center">
-              <div className="size-2.5 outline outline-[1.40px] outline-offset-[-0.70px] outline-color-border-focus" />
-            </div>
+            <Pencil className="size-3.5 text-color-text-inverse" />
             <div className="text-center justify-start text-color-text-inverse text-xs font-semibold font-['Manrope'] leading-4">
               Edit
             </div>

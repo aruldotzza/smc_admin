@@ -17,6 +17,7 @@ import {
   Car,
   UserCheck,
 } from "lucide-react";
+import { WhatsAppIcon } from "@/Shared/Icons";
 import PlacesAutocompleteInput from "@/Components/Common/PlacesAutocompleteInput";
 
 const SERVICES_CATALOG = [
@@ -420,23 +421,27 @@ export default function NewBookingModal() {
                   <div className="grid grid-cols-4 gap-2">
                     {[
                       { id: "phone" as BookingChannel, label: "Phone", icon: PhoneCall },
-                      { id: "whatsapp" as BookingChannel, label: "WhatsApp", icon: null },
+                      { id: "whatsapp" as BookingChannel, label: "WhatsApp", icon: WhatsAppIcon },
                       { id: "website" as BookingChannel, label: "Website", icon: Globe },
                       { id: "email" as BookingChannel, label: "Email", icon: Mail },
-                    ].map((ch) => (
-                      <button
-                        key={ch.id}
-                        type="button"
-                        onClick={() => setChannel(ch.id)}
-                        className={`py-2 rounded-lg border text-xs font-semibold transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
-                          channel === ch.id
-                            ? "bg-stone-900 text-white border-stone-900"
-                            : "bg-stone-50 border-stone-200 text-stone-600 hover:bg-stone-100"
-                        }`}
-                      >
-                        {ch.label}
-                      </button>
-                    ))}
+                    ].map((ch) => {
+                      const Icon = ch.icon;
+                      return (
+                        <button
+                          key={ch.id}
+                          type="button"
+                          onClick={() => setChannel(ch.id)}
+                          className={`py-2 rounded-lg border text-xs font-semibold transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
+                            channel === ch.id
+                              ? "bg-stone-900 text-white border-stone-900"
+                              : "bg-stone-50 border-stone-200 text-stone-600 hover:bg-stone-100"
+                          }`}
+                        >
+                          <Icon className="size-3.5" />
+                          <span>{ch.label}</span>
+                        </button>
+                      );
+                    })}
                   </div>
                 </div>
               </div>

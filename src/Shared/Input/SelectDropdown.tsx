@@ -1,4 +1,5 @@
 import React from "react";
+import { ChevronDown } from "lucide-react";
 
 interface Option {
   value: string;
@@ -44,8 +45,8 @@ export default function SelectDropdown({
             </option>
           ))}
         </select>
-        <div className="absolute right-3 pointer-events-none text-slate-400 text-xs">
-          ▼
+        <div className="absolute right-3 pointer-events-none text-slate-400">
+          <ChevronDown className="size-4" />
         </div>
       </div>
     </div>

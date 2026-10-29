@@ -24,6 +24,7 @@ import {
   ArrowRight,
   Trash2,
 } from "lucide-react";
+import { WhatsAppIcon } from "@/Shared/Icons";
 
 export default function BookingDetailsModal() {
   const {
@@ -260,7 +261,7 @@ export default function BookingDetailsModal() {
     switch (channel) {
       case "whatsapp":
         return {
-          icon: MessageCircle,
+          icon: WhatsAppIcon,
           label: "WhatsApp",
           classes: "bg-emerald-50 text-emerald-700 border-emerald-200",
         };
@@ -563,7 +564,7 @@ export default function BookingDetailsModal() {
                     className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer flex-shrink-0 shadow-xs"
                     title="WhatsApp Driver"
                   >
-                    <MessageCircle className="size-3.5" />
+                    <WhatsAppIcon className="size-3.5" />
                     <span>WhatsApp</span>
                   </button>
                 </div>
@@ -613,7 +614,7 @@ export default function BookingDetailsModal() {
                   title="Send full booking summary to customer via WhatsApp"
                   className="w-full py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-semibold flex items-center justify-center gap-2 transition-colors cursor-pointer shadow-xs"
                 >
-                  <MessageCircle className="size-4" />
+                  <WhatsAppIcon className="size-4" />
                   <span>WhatsApp Customer</span>
                 </button>
               </div>
@@ -649,7 +650,7 @@ export default function BookingDetailsModal() {
               type="button"
               onClick={handleDeleteBooking}
               disabled={isDeleting}
-              className="px-3 py-2 bg-red-50 hover:bg-red-100 border border-red-200 text-red-700 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer disabled:opacity-50"
+              className="px-3.5 py-2 bg-red-50 hover:bg-red-100 border border-red-200 text-red-700 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer disabled:opacity-50"
               title="Permanently remove this booking"
             >
               <Trash2 className="size-3.5 text-red-600" />
@@ -661,14 +662,6 @@ export default function BookingDetailsModal() {
               className="px-4 py-2 bg-white hover:bg-stone-100 border border-slate-300 text-slate-700 rounded-lg text-xs font-semibold transition-colors cursor-pointer"
             >
               Close
-            </button>
-            <button
-              type="button"
-              onClick={openCustomerWhatsApp}
-              className="px-4 py-2 bg-color-background-accent hover:brightness-105 text-slate-900 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer shadow-xs"
-            >
-              <MessageCircle className="size-3.5 text-slate-900" />
-              <span>WhatsApp Customer</span>
             </button>
           </div>
         </div>

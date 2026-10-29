@@ -6,6 +6,7 @@ import FleetCard from "@/Components/Fleet/FleetCard";
 import AddVehicleModal from "@/Components/Fleet/AddVehicleModal";
 import EditVehicleModal from "@/Components/Fleet/EditVehicleModal";
 import { useFleet } from "@/context/FleetContext";
+import { Plus } from "lucide-react";
 
 export default function FleetPage() {
   const { vehicles, activeVehiclesCount, totalVehiclesCount, openAddVehicleModal } =
@@ -41,11 +42,9 @@ export default function FleetPage() {
           <button
             type="button"
             onClick={openAddVehicleModal}
-            className="px-4 py-2.5 bg-color-background-accent rounded-lg flex justify-start items-center gap-2 hover:brightness-105 transition-all cursor-pointer"
+            className="px-4 py-2.5 bg-color-background-accent rounded-lg flex justify-start items-center gap-2 hover:brightness-105 transition-all cursor-pointer shadow-xs"
           >
-            <div className="size-4 relative overflow-hidden flex items-center justify-center">
-              <div className="size-2.5 outline outline-[1.60px] outline-offset-[-0.80px] outline-slate-900" />
-            </div>
+            <Plus className="size-4 text-slate-900" />
             <div className="text-center justify-start text-color-text-primary text-xs font-semibold font-['Manrope'] leading-5">
               Add Vehicle
             </div>

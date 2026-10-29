@@ -1,5 +1,6 @@
 import React from "react";
-import { MessageSquare, Globe, Phone, CheckCircle2, Clock, PlayCircle, XCircle, AlertTriangle, User } from "lucide-react";
+import { Globe, Phone, CheckCircle2, Clock, PlayCircle, XCircle, AlertTriangle, User } from "lucide-react";
+import { WhatsAppIcon } from "@/Shared/Icons";
 
 export type BadgeVariant =
   | "gold"
@@ -78,7 +79,7 @@ export default function Badge({
     if (icon) return icon;
     switch (variant) {
       case "whatsapp":
-        return <MessageSquare className="w-3 h-3 text-emerald-600" />;
+        return <WhatsAppIcon className="w-3 h-3 text-emerald-600" />;
       case "website":
         return <Globe className="w-3 h-3 text-blue-600" />;
       case "phone":

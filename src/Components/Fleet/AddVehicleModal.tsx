@@ -3,6 +3,7 @@
 import React, { useState, useRef } from "react";
 import { useFleet } from "@/context/FleetContext";
 import { VehicleStatus } from "@/types/fleet";
+import { X } from "lucide-react";
 
 export default function AddVehicleModal() {
   const { isAddVehicleModalOpen, closeAddVehicleModal, addVehicle, totalVehiclesCount } =
@@ -87,11 +88,10 @@ export default function AddVehicleModal() {
           <button
             type="button"
             onClick={closeAddVehicleModal}
-            className="size-8 flex justify-center items-center text-gray-500 hover:text-gray-800 cursor-pointer"
+            className="size-8 rounded-lg flex justify-center items-center text-gray-500 hover:text-gray-800 hover:bg-slate-100 transition-colors cursor-pointer"
+            aria-label="Close modal"
           >
-            <div className="size-4 relative overflow-hidden">
-              <div className="size-2 left-[4px] top-[4px] absolute outline outline-[1.40px] outline-offset-[-0.70px] outline-gray-500" />
-            </div>
+            <X className="size-5" />
           </button>
         </div>
 

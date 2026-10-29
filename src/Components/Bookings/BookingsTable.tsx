@@ -4,6 +4,7 @@ import React from "react";
 import { useBookings } from "@/context/BookingContext";
 import { Booking } from "@/types/booking";
 import { Globe, PhoneCall, Mail } from "lucide-react";
+import { WhatsAppIcon } from "@/Shared/Icons";
 
 export default function BookingsTable() {
   const { filteredBookings, activeBookingId, openBookingDetails } = useBookings();
@@ -20,7 +21,7 @@ export default function BookingsTable() {
         return {
           bg: "bg-green-50 outline outline-1 outline-offset-[-1px] outline-green-200 text-green-700",
           text: "WhatsApp",
-          icon: null, // Custom green dot or WhatsApp
+          icon: WhatsAppIcon,
         };
       case "email":
         return {
@@ -171,11 +172,7 @@ export default function BookingsTable() {
                     <div
                       className={`px-2 py-0.5 rounded-full inline-flex justify-start items-center gap-1 ${srcBadge.bg}`}
                     >
-                      {Icon ? (
-                        <Icon className="size-2.5 flex-shrink-0" />
-                      ) : (
-                        <div className="size-2.5 bg-green-700 rounded-full flex-shrink-0" />
-                      )}
+                      {Icon && <Icon className="size-2.5 flex-shrink-0" />}
                       <div className="text-[10px] font-semibold font-['Manrope'] leading-4">
                         {srcBadge.text}
                       </div>

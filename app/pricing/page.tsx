@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import AdminLayout from "@/Components/Layout/AdminLayout";
 import { usePricing } from "@/context/PricingContext";
 import { VehiclePricingRate, PricingTab } from "@/types/pricing";
+import { Save, Check } from "lucide-react";
 
 export default function PricingPage() {
   const {
@@ -142,9 +143,11 @@ export default function PricingPage() {
               disabled={saveStatus === "saving"}
               className="px-5 py-2.5 bg-color-background-accent rounded-lg flex justify-start items-center gap-2 hover:brightness-105 transition-all cursor-pointer disabled:opacity-50"
             >
-              <div className="size-4 relative overflow-hidden flex items-center justify-center">
-                <div className="w-2.5 h-1.5 outline outline-[1.60px] outline-offset-[-0.80px] outline-slate-900" />
-              </div>
+              {saveStatus === "saved" ? (
+                <Check className="size-4 text-slate-900" />
+              ) : (
+                <Save className="size-4 text-slate-900" />
+              )}
               <div className="text-center justify-start text-color-text-primary text-xs font-semibold font-['Manrope'] leading-5">
                 {saveStatus === "saving"
                   ? "Saving to API..."

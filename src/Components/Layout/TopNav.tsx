@@ -2,8 +2,9 @@
 
 import React from "react";
 import { usePathname } from "next/navigation";
-import { Menu, MessageCircle } from "lucide-react";
+import { Menu } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
+import { WhatsAppIcon } from "@/Shared/Icons";
 
 interface TopNavProps {
   onOpenMobileMenu: () => void;
@@ -56,9 +57,7 @@ export default function TopNav({ onOpenMobileMenu }: TopNavProps) {
         <div className="flex justify-start items-center gap-3">
           {/* WhatsApp Channel */}
           <div className="flex justify-start items-center gap-1.5">
-            <div className="size-4 relative flex items-center justify-center">
-              <div className="size-2.5 bg-color-status-success rounded-full" />
-            </div>
+            <WhatsAppIcon className="size-4 text-color-status-success" />
             <div className="justify-start text-color-status-success text-xs font-medium font-['Manrope'] leading-5">
               WhatsApp
             </div>
