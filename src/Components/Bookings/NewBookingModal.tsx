@@ -269,7 +269,10 @@ export default function NewBookingModal() {
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex justify-center items-center p-3 sm:p-4 animate-in fade-in duration-200">
+    <div
+      className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex justify-center items-center p-3 sm:p-4 animate-in fade-in duration-200"
+      onClick={handleResetAndClose}
+    >
       <div
         className="w-full max-w-[620px] max-h-[92vh] bg-color-background-white rounded-2xl shadow-2xl flex flex-col justify-start items-start overflow-hidden font-['Manrope']"
         onClick={(e) => e.stopPropagation()}
@@ -602,7 +605,12 @@ export default function NewBookingModal() {
                       type="date"
                       value={pickupDate}
                       onChange={(e) => setPickupDate(e.target.value)}
-                      className="w-full h-10 px-3 py-2 bg-stone-100 rounded-lg outline outline-1 outline-offset-[-1px] outline-color-border-subtle text-xs text-slate-900 font-normal focus:outline-none focus:ring-1 focus:ring-amber-500"
+                      onClick={(e) => {
+                        try {
+                          (e.currentTarget as HTMLInputElement).showPicker?.();
+                        } catch {}
+                      }}
+                      className="w-full h-10 px-3 py-2 bg-stone-100 rounded-lg outline outline-1 outline-offset-[-1px] outline-color-border-subtle text-xs text-slate-900 font-normal focus:outline-none focus:ring-1 focus:ring-amber-500 cursor-pointer"
                     />
                   </div>
                   <div className="flex flex-col gap-1">
@@ -613,7 +621,12 @@ export default function NewBookingModal() {
                       type="time"
                       value={pickupTime}
                       onChange={(e) => setPickupTime(e.target.value)}
-                      className="w-full h-10 px-3 py-2 bg-stone-100 rounded-lg outline outline-1 outline-offset-[-1px] outline-color-border-subtle text-xs text-slate-900 font-normal focus:outline-none focus:ring-1 focus:ring-amber-500"
+                      onClick={(e) => {
+                        try {
+                          (e.currentTarget as HTMLInputElement).showPicker?.();
+                        } catch {}
+                      }}
+                      className="w-full h-10 px-3 py-2 bg-stone-100 rounded-lg outline outline-1 outline-offset-[-1px] outline-color-border-subtle text-xs text-slate-900 font-normal focus:outline-none focus:ring-1 focus:ring-amber-500 cursor-pointer"
                     />
                   </div>
                 </div>
