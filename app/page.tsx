@@ -134,10 +134,10 @@ export default function DashboardPage() {
             <RecentBookingsTable />
           </div>
 
-          {/* Right Column: Booking Status + Quick Actions */}
+          {/* Right Column: Quick Actions + Booking Status */}
           <div className="w-full lg:w-80 xl:w-96 flex-shrink-0 flex flex-col gap-6">
-            <StatusBreakdownCard />
             <QuickActionsCard />
+            <StatusBreakdownCard />
           </div>
         </div>
       </div>

@@ -323,12 +323,12 @@ export default function PricingPage() {
                 <table className="w-full text-left border-collapse min-w-[800px]">
                   <thead>
                     <tr className="bg-stone-100 border-b border-color-border-subtle text-color-input-placeholder text-xs font-semibold font-['Manrope'] uppercase tracking-wide">
-                      <th className="px-5 py-3.5">Vehicle</th>
-                      <th className="px-5 py-3.5">Capacity</th>
-                      <th className="px-5 py-3.5">Base Fare</th>
-                      <th className="px-5 py-3.5">Meet & Greet</th>
-                      <th className="px-5 py-3.5">3-Hour Charter</th>
-                      <th className="px-5 py-3.5">8-Hour Charter</th>
+                      <th className="px-5 py-3.5 w-[280px] max-w-[280px]">Vehicle</th>
+                      <th className="px-5 py-3.5 whitespace-nowrap">Capacity</th>
+                      <th className="px-5 py-3.5 whitespace-nowrap">Base Fare</th>
+                      <th className="px-5 py-3.5 whitespace-nowrap">Meet & Greet</th>
+                      <th className="px-5 py-3.5 whitespace-nowrap">3-Hour Charter</th>
+                      <th className="px-5 py-3.5 whitespace-nowrap">8-Hour Charter</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-100 text-xs">
@@ -338,19 +338,19 @@ export default function PricingPage() {
                         className="hover:bg-stone-50/60 transition-colors"
                       >
                         {/* Vehicle */}
-                        <td className="px-5 py-4">
-                          <div className="flex flex-col justify-start items-start">
+                        <td className="px-5 py-4 w-[280px] max-w-[280px]">
+                          <div className="flex flex-col justify-start items-start max-w-[280px]">
                             <div className="justify-start text-color-text-primary text-xs font-semibold font-['Manrope'] leading-5">
                               {rate.name}
                             </div>
-                            <div className="justify-start text-color-input-placeholder text-xs font-normal font-['Manrope'] leading-4">
+                            <div className="justify-start text-color-input-placeholder text-xs font-normal font-['Manrope'] leading-relaxed break-words">
                               {rate.model}
                             </div>
                           </div>
                         </td>
 
                         {/* Capacity */}
-                        <td className="px-5 py-4">
+                        <td className="px-5 py-4 whitespace-nowrap">
                           <div className="justify-start text-color-input-placeholder text-xs font-normal font-['Manrope'] leading-5">
                             {rate.capacityText}
                           </div>

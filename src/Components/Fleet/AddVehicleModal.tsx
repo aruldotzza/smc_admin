@@ -16,6 +16,7 @@ export default function AddVehicleModal() {
   const [imagePath, setImagePath] = useState("/assets/2edae.png");
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [imagePreviewUrl, setImagePreviewUrl] = useState<string | null>(null);
+  const [imageError, setImageError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [driverName, setDriverName] = useState("");
@@ -35,6 +36,11 @@ export default function AddVehicleModal() {
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
+      if (file.size > 2 * 1024 * 1024) {
+        setImageError("Image size must be under 2MB");
+        return;
+      }
+      setImageError(null);
       setSelectedFile(file);
       setImagePreviewUrl(URL.createObjectURL(file));
     }
@@ -187,7 +193,7 @@ export default function AddVehicleModal() {
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                       </svg>
                       <span className="text-xs font-medium text-slate-300">Choose vehicle photo</span>
-                      <span className="text-[10px] text-slate-500">PNG, JPG, WEBP up to 5MB</span>
+                      <span className="text-[10px] text-slate-500">PNG, JPG, WEBP up to 2MB</span>
                     </div>
                   )}
 
@@ -197,6 +203,10 @@ export default function AddVehicleModal() {
                     </div>
                   )}
                 </div>
+
+                {imageError && (
+                  <div className="text-rose-600 text-xs font-medium">{imageError}</div>
+                )}
 
                 <div className="self-stretch flex items-center gap-2">
                   <input

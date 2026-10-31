@@ -9,7 +9,6 @@ import {
   CalendarDays,
   Car,
   DollarSign,
-  ArrowUpRight,
   LogOut,
   X,
 } from "lucide-react";
@@ -145,18 +144,6 @@ export default function Sidebar({ mobileOpen = false, onCloseMobile }: SidebarPr
 
         {/* Bottom Actions */}
         <div className="self-stretch px-3 py-4 border-t border-white/10 flex flex-col justify-start items-start gap-1">
-          <a
-            href="https://singaporemaxicabs.com"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="self-stretch px-3 py-2.5 rounded-lg inline-flex justify-start items-center gap-3 text-white/50 hover:text-white/80 hover:bg-white/5 transition-colors"
-          >
-            <ArrowUpRight className="size-4 text-white/50 flex-shrink-0" />
-            <div className="justify-start text-xs font-normal font-['Manrope'] leading-5">
-              Back to Site
-            </div>
-          </a>
-
           <button
             type="button"
             onClick={logout}

@@ -4,7 +4,6 @@ import React from "react";
 import { usePathname } from "next/navigation";
 import { Menu } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
-import { WhatsAppIcon } from "@/Shared/Icons";
 
 interface TopNavProps {
   onOpenMobileMenu: () => void;
@@ -52,23 +51,12 @@ export default function TopNav({ onOpenMobileMenu }: TopNavProps) {
         </div>
       </div>
 
-      {/* Right: WhatsApp Channel & User Avatar */}
+      {/* Right: User Avatar */}
       <div className="flex-1 flex justify-end items-center">
-        <div className="flex justify-start items-center gap-3">
-          {/* WhatsApp Channel */}
-          <div className="flex justify-start items-center gap-1.5">
-            <WhatsAppIcon className="size-4 text-color-status-success" />
-            <div className="justify-start text-color-status-success text-xs font-medium font-['Manrope'] leading-5">
-              WhatsApp
-            </div>
-          </div>
-
-          {/* User Avatar */}
-          <div className="size-8 bg-color-background-brand rounded-full flex justify-center items-center flex-shrink-0">
-            <div className="inline-flex flex-col justify-start items-start">
-              <div className="justify-start text-color-text-inverse text-xs font-bold font-['Manrope'] leading-4">
-                {user?.initials || "OW"}
-              </div>
+        <div className="size-8 bg-color-background-brand rounded-full flex justify-center items-center flex-shrink-0">
+          <div className="inline-flex flex-col justify-start items-start">
+            <div className="justify-start text-color-text-inverse text-xs font-bold font-['Manrope'] leading-4">
+              {user?.initials || "OW"}
             </div>
           </div>
         </div>

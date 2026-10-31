@@ -71,8 +71,8 @@ export default function EditVehicleModal() {
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      if (file.size > 5 * 1024 * 1024) {
-        setImageMessage({ type: "error", text: "Image size must be under 5MB" });
+      if (file.size > 2 * 1024 * 1024) {
+        setImageMessage({ type: "error", text: "Image size must be under 2MB" });
         return;
       }
       setSelectedFile(file);
@@ -270,7 +270,7 @@ export default function EditVehicleModal() {
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                       </svg>
                       <span className="text-xs font-medium text-slate-300">No photo uploaded</span>
-                      <span className="text-[10px] text-slate-500">PNG, JPG, WEBP up to 5MB</span>
+                      <span className="text-[10px] text-slate-500">PNG, JPG, WEBP up to 2MB</span>
                     </div>
                   )}
 
